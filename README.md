@@ -452,6 +452,10 @@ Comprehensive documentation guides:
 
 ---
 
+## Contributing
+
+Contributions are welcome! Please review [CONTRIBUTING.md](CONTRIBUTING.md) for details on coding standards, testing quality gates, and release procedures. All participants are expected to adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
