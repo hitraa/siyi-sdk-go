@@ -62,6 +62,7 @@ func (t *TCPTransport) Connect(ctx context.Context) error {
 }
 
 func (t *TCPTransport) readLoop() {
+	defer close(t.streamCh)
 	buf := make([]byte, 4096)
 	for {
 		select {
@@ -113,9 +114,7 @@ func (t *TCPTransport) Close() error {
 
 	t.connected = false
 	close(t.closed)
-	err := t.conn.Close()
-	close(t.streamCh)
-	return err
+	return t.conn.Close()
 }
 
 // Send transmits raw bytes over TCP.

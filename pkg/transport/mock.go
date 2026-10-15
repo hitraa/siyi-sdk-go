@@ -13,6 +13,7 @@ type MockTransport struct {
 	sentFrames        [][]byte
 	streamCh          chan []byte
 	errCh             chan error
+	onSend            func(data []byte)
 }
 
 // NewMockTransport creates a new MockTransport instance.
@@ -65,7 +66,18 @@ func (m *MockTransport) Send(ctx context.Context, data []byte) error {
 	frameCopy := make([]byte, len(data))
 	copy(frameCopy, data)
 	m.sentFrames = append(m.sentFrames, frameCopy)
+	if m.onSend != nil {
+		fn := m.onSend
+		go fn(frameCopy)
+	}
 	return nil
+}
+
+// SetOnSend configures an optional callback triggered whenever a frame is sent.
+func (m *MockTransport) SetOnSend(fn func(data []byte)) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.onSend = fn
 }
 
 // Stream returns the channel yielding queued responses.

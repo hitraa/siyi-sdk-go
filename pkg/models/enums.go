@@ -4,16 +4,21 @@ package models
 type ProductID uint8
 
 const (
-	ProductZR10         ProductID = 0x6B
-	ProductA8Mini       ProductID = 0x73
-	ProductA2Mini       ProductID = 0x75
-	ProductZR30         ProductID = 0x78
-	ProductQuadSpectrum ProductID = 0x7A
+	ProductZR10Alternate ProductID = 0x63
+	ProductZR10          ProductID = 0x6B
+	ProductA8Mini        ProductID = 0x73
+	ProductA2Mini        ProductID = 0x75
+	ProductZR30          ProductID = 0x78
+	ProductQuadSpectrum  ProductID = 0x7A
+	ProductZT30          ProductID = 0x80
+	ProductZT6Alternate  ProductID = 0x82
+	ProductZT6           ProductID = 0x83
+	ProductZT30Alternate ProductID = 0x85
 )
 
 func (p ProductID) String() string {
 	switch p {
-	case ProductZR10:
+	case ProductZR10, ProductZR10Alternate:
 		return "ZR10"
 	case ProductA8Mini:
 		return "A8 Mini"
@@ -23,8 +28,22 @@ func (p ProductID) String() string {
 		return "ZR30"
 	case ProductQuadSpectrum:
 		return "Quad Spectrum"
+	case ProductZT30, ProductZT30Alternate:
+		return "ZT30"
+	case ProductZT6, ProductZT6Alternate:
+		return "ZT6"
 	default:
 		return "Unknown"
+	}
+}
+
+// Generation returns the camera streaming generation (Old vs New) for this product ID.
+func (p ProductID) Generation() CameraGeneration {
+	switch p {
+	case ProductZT30, ProductZT30Alternate, ProductZT6, ProductZT6Alternate:
+		return CameraGenerationNew
+	default:
+		return CameraGenerationOld
 	}
 }
 

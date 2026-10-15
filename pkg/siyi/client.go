@@ -2,6 +2,7 @@ package siyi
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"math"
 	"reflect"
@@ -808,6 +809,8 @@ func (c *Client) SetMavlinkOSDFlag(ctx context.Context, on bool) (bool, error) {
 // -----------------------------------------------------------------------------
 
 // ManualZoom controls zoom velocity (-1=zoom out, 0=stop, 1=zoom in) (0x05).
+// When direction is 0 (stop) on certain cameras (such as A8 mini), the camera may not ACK
+// if not actively zooming; in that case, it falls back to querying the current zoom.
 func (c *Client) ManualZoom(ctx context.Context, direction int) (float64, error) {
 	payload, err := commands.EncodeManualZoom(direction)
 	if err != nil {
@@ -815,6 +818,13 @@ func (c *Client) ManualZoom(ctx context.Context, direction int) (float64, error)
 	}
 	data, err := c.sendCommand(ctx, protocol.CmdManualZoomAutoFocus, payload)
 	if err != nil {
+		if direction == 0 && (errors.Is(err, ErrTimeout) || errors.Is(err, context.DeadlineExceeded)) {
+			cz, zErr := c.GetCurrentZoom(ctx)
+			if zErr != nil {
+				return 0, zErr
+			}
+			return cz.Zoom(), nil
+		}
 		return 0, err
 	}
 	return commands.DecodeManualZoomAck(data)

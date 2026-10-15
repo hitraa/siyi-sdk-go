@@ -292,3 +292,30 @@ func TestClient_CreateStream(t *testing.T) {
 	}
 }
 
+func TestClient_ManualZoomFallback(t *testing.T) {
+	ctx := context.Background()
+	mock := transport.NewMockTransport(false)
+	client := siyi.NewClient(mock, siyi.WithTimeout(50*time.Millisecond), siyi.WithRetries(0))
+	_ = client.Connect(ctx)
+	defer client.Close()
+
+	// 0x05 stop command will timeout after 50ms without ACK.
+	// When client falls back to querying zoom magnification (0x18), respond with 3.5x.
+	mock.SetOnSend(func(data []byte) {
+		if len(data) >= 8 && data[7] == protocol.CmdRequestZoomMagnification {
+			zoomPayload := []byte{0x03, 0x05} // 3.5x
+			zoomFrame := protocol.Build(protocol.CmdRequestZoomMagnification, zoomPayload, 2, false).ToBytes()
+			mock.QueueResponse(zoomFrame)
+		}
+	})
+
+	mag, err := client.ManualZoom(ctx, 0)
+	if err != nil {
+		t.Fatalf("ManualZoom(0) fallback failed: %v", err)
+	}
+	if mag != 3.5 {
+		t.Errorf("got zoom %f, want 3.5", mag)
+	}
+}
+
+

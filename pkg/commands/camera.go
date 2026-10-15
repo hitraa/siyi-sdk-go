@@ -83,11 +83,13 @@ func DecodeGetEncodingParams(payload []byte) (models.EncodingParams, error) {
 
 // EncodeSetEncodingParams encodes 9-byte configuration payload (0x21).
 func EncodeSetEncodingParams(params models.EncodingParams) ([]byte, error) {
-	// Validate resolution per specification
-	if !((params.ResolutionW == 1920 && params.ResolutionH == 1080) ||
+	// Validate resolution per specification (supports 4K, 2K, 1080p, 720p)
+	if !((params.ResolutionW == 3840 && params.ResolutionH == 2160) ||
+		(params.ResolutionW == 2560 && params.ResolutionH == 1440) ||
+		(params.ResolutionW == 1920 && params.ResolutionH == 1080) ||
 		(params.ResolutionW == 1280 && params.ResolutionH == 720)) {
 		return nil, &ConfigurationError{
-			Message: fmt.Sprintf("resolution must be 1920x1080 or 1280x720, got %dx%d",
+			Message: fmt.Sprintf("resolution must be 3840x2160, 2560x1440, 1920x1080, or 1280x720, got %dx%d",
 				params.ResolutionW, params.ResolutionH),
 		}
 	}

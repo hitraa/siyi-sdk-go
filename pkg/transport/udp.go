@@ -82,6 +82,7 @@ func (u *UDPTransport) Connect(ctx context.Context) error {
 }
 
 func (u *UDPTransport) readLoop() {
+	defer close(u.streamCh)
 	buf := make([]byte, 4096)
 	for {
 		select {
@@ -127,9 +128,7 @@ func (u *UDPTransport) Close() error {
 
 	u.connected = false
 	close(u.closed)
-	err := u.conn.Close()
-	close(u.streamCh)
-	return err
+	return u.conn.Close()
 }
 
 // Send transmits raw bytes over UDP.
