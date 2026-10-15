@@ -385,22 +385,46 @@ make lint
 
 ---
 
+## Documentation
+
+Comprehensive documentation guides:
+
+- **[Quickstart Guide](docs/quickstart.md)**: Getting started with UDP, TCP, Serial UART, camera and gimbal control.
+- **[SIYI Protocol Specification Reference](docs/protocol.md)**: Deep dive into binary framing, CRC-16/XMODEM, timing, quirks, and complete 80+ command catalogue.
+- **[RTSP Video Streaming Guide](docs/streaming.md)**: Pure Go RTSP video streaming, URL scheme across camera generations, reconnection.
+- **[Camera Media HTTP API (Port 82)](docs/media_http_api.md)**: TF card photo and video gallery management, file listing, count, and downloading.
+- **[Web UI Dashboard Guide](docs/web_ui.md)**: Running the embedded real-time web dashboard, WebSocket telemetry, and video proxy.
+
+---
+
 ## Repository Structure
 
 ```
 ├── cmd/
-│   ├── siyi-cli/          # Command-line utility
+│   ├── siyi-cli/          # Command-line utility (all commands supported)
 │   └── siyi-web/          # Web dashboard server entrypoint
+├── docs/                  # Detailed architectural and usage documentation
+│   ├── quickstart.md      # Quickstart guide
+│   ├── protocol.md        # Protocol framing and 80+ command catalogue
+│   ├── streaming.md       # RTSP video streaming guide
+│   ├── media_http_api.md  # Port 82 media API reference
+│   └── web_ui.md          # Embedded web UI guide
 ├── examples/
 │   ├── quickstart/        # Basic camera and gimbal control
 │   ├── attitude_stream/   # 10Hz telemetry push subscription
+│   ├── camera_capture/    # Photo capture and video recording
+│   ├── gimbal_control/    # Attitude targets, rate control, 50Hz NoWait servoing
+│   ├── thermal_imaging/   # Spot, box, global temperature and pseudo-color
+│   ├── laser_ranging/     # Laser rangefinder on/off, distance, lat/lon coords
+│   ├── zoom_focus/        # Manual/absolute zoom and manual/auto focus
+│   ├── media_gallery/     # TF card photo and video directory listing
 │   └── streaming/         # Pure-Go RTSP stream ingestion
 ├── pkg/
 │   ├── commands/          # Serializers/deserializers for ~75 protocol commands
 │   ├── media/             # HTTP media client (port 82)
 │   ├── models/            # Domain models, enums, limits, and decoders
 │   ├── protocol/          # Frame packaging, CRC-16, and state-machine parser
-│   ├── siyi/              # High-level client, retries, locks, convenience
+│   ├── siyi/              # High-level client, retries, locks, NoWait, stream
 │   ├── stream/            # RTSP client and URL builder (gortsplib/v4)
 │   └── transport/         # UDP, TCP, Serial UART, and Mock transports
 ├── web/
