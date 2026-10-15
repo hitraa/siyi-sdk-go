@@ -17,7 +17,7 @@ func main() {
 	ip := flag.String("ip", protocol.DefaultIP, "Camera IP address")
 	port := flag.Int("port", protocol.DefaultUDPPort, "UDP/TCP port")
 	proto := flag.String("proto", "udp", "Protocol (udp, tcp)")
-	cmd := flag.String("cmd", "info", "Command: info, attitude, center, rotate, photo, record, zoom, focus, laser, format, reboot, rtsp-url")
+	cmd := flag.String("cmd", "info", "Command: info, attitude, center, rotate, photo, record, zoom, focus, laser, format, reboot, rtsp-url, discover")
 
 	// Command-specific parameters
 	yaw := flag.Int("yaw", 0, "Yaw velocity (-100..100) for rotate")
@@ -29,6 +29,27 @@ func main() {
 	rebootTarget := flag.String("reboot-target", "both", "Reboot target: camera, gimbal, or both")
 
 	flag.Parse()
+
+	if *cmd == "discover" {
+		fmt.Println("Probing local network for SIYI cameras (UDP 37260 broadcast)...")
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		devices, err := siyi.Discover(ctx, "255.255.255.255", 2*time.Second)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Discovery error: %v\n", err)
+			os.Exit(1)
+		}
+		if len(devices) == 0 {
+			fmt.Println("No SIYI cameras discovered.")
+			return
+		}
+		fmt.Printf("Discovered %d SIYI camera(s):\n", len(devices))
+		for i, d := range devices {
+			fmt.Printf("  [%d] Model: %-15s IP: %-16s Port: %-5d HWID: %s\n",
+				i+1, d.ModelName, d.IP, d.Port, d.HardwareID)
+		}
+		return
+	}
 
 	if *cmd == "rtsp-url" {
 		urlOld := stream.BuildRTSPURL(*ip, models.StreamTypeMain, models.CameraGenerationOld)

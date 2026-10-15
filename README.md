@@ -420,12 +420,17 @@ Comprehensive documentation guides:
 │   ├── media_gallery/     # TF card photo and video directory listing
 │   └── streaming/         # Pure-Go RTSP stream ingestion
 ├── pkg/
-│   ├── commands/          # Serializers/deserializers for ~75 protocol commands
-│   ├── media/             # HTTP media client (port 82)
+│   ├── admin/             # Port 80 camera web administration client
+│   ├── commands/          # Serializers/deserializers for all 80+ protocol commands
+│   ├── discovery/         # UDP broadcast network auto-discovery
+│   ├── mavlink/           # MAVLink v2 Gimbal & Camera Protocol client (UDP 14550)
+│   ├── media/             # HTTP media gallery client (port 82)
 │   ├── models/            # Domain models, enums, limits, and decoders
+│   ├── multicam/          # Multi-camera and dual-payload cluster orchestration
 │   ├── protocol/          # Frame packaging, CRC-16, and state-machine parser
 │   ├── siyi/              # High-level client, retries, locks, NoWait, stream
-│   ├── stream/            # RTSP client and URL builder (gortsplib/v4)
+│   ├── stream/            # Pure-Go RTSP client and URL builder (gortsplib/v4)
+│   ├── thermal/           # Radiometric Y16 thermal matrix decoding & colormaps
 │   └── transport/         # UDP, TCP, Serial UART, and Mock transports
 ├── web/
 │   ├── server.go          # REST API, WebSocket attitude, and MJPEG proxy

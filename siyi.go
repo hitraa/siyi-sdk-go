@@ -5,7 +5,9 @@ package siyi
 
 import (
 	"context"
+	"time"
 
+	"github.com/hitraa/siyi-sdk-go/pkg/discovery"
 	"github.com/hitraa/siyi-sdk-go/pkg/siyi"
 	"github.com/hitraa/siyi-sdk-go/pkg/transport"
 )
@@ -52,4 +54,12 @@ func ConnectTCP(ctx context.Context, ip string, port int, opts ...ClientOption) 
 // ConnectSerial creates, connects, and returns a Client using UART serial.
 func ConnectSerial(ctx context.Context, device string, baud int, opts ...ClientOption) (*Client, error) {
 	return siyi.ConnectSerial(ctx, device, baud, opts...)
+}
+
+// Device alias for discovery.Device
+type DiscoveredDevice = discovery.Device
+
+// Discover probes the local network for SIYI cameras via UDP broadcast.
+func Discover(ctx context.Context, broadcastAddr string, timeout time.Duration) ([]DiscoveredDevice, error) {
+	return discovery.Discover(ctx, broadcastAddr, timeout)
 }
