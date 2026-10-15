@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// 1. Measure temperature at screen center point (320, 256 for 640x512 thermal core)
 	fmt.Println("Querying temperature at center point (320, 256)...")

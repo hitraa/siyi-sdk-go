@@ -33,17 +33,18 @@ func TestWebServer_Routes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed GET /: %v", err)
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
 		t.Errorf("expected 200 OK for index.html, got %d", resp.StatusCode)
 	}
+	_ = resp.Body.Close()
 
 	// 2. Test Config IP (GET and POST)
 	resp, err = client.Get("http://localhost:18082/api/config/ip")
 	if err != nil {
 		t.Fatalf("failed GET /api/config/ip: %v", err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200 OK for GET /api/config/ip, got %d", resp.StatusCode)
 	}
@@ -53,7 +54,7 @@ func TestWebServer_Routes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed POST /api/config/ip: %v", err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200 OK for POST /api/config/ip, got %d", resp.StatusCode)
 	}
@@ -64,7 +65,7 @@ func TestWebServer_Routes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed POST /api/stream/toggle: %v", err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200 OK for POST /api/stream/toggle, got %d", resp.StatusCode)
 	}
@@ -72,19 +73,19 @@ func TestWebServer_Routes(t *testing.T) {
 	// 4. Test System Info (returns 503 or error since camera offline, but route exists and executes)
 	resp, err = client.Get("http://localhost:18082/api/system/info")
 	if err == nil {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	// 5. Test Gimbal Rotate
 	body, _ = json.Marshal(map[string]int{"yaw": 10, "pitch": -5})
 	resp, err = client.Post("http://localhost:18082/api/gimbal/rotate", "application/json", bytes.NewReader(body))
 	if err == nil {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	// 6. Test Gimbal Center
 	resp, err = client.Post("http://localhost:18082/api/gimbal/center", "application/json", nil)
 	if err == nil {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 }

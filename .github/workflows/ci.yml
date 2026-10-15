@@ -18,6 +18,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         go-version: ["1.22", "1.23", "1.24", "1.25", "1.26", "1.27", stable]
+        exclude:
+          # Modern macOS ARM64 runners strictly enforce Mach-O LC_UUID in dyld.
+          # Go's internal linker added native LC_UUID support for darwin/arm64 in Go 1.24+.
+          # Pre-1.24 Go test binaries trigger dyld: missing LC_UUID load command aborts on macOS runners.
+          - os: macos-latest
+            go-version: "1.22"
+          - os: macos-latest
+            go-version: "1.23"
 
     steps:
       - name: Check out repository

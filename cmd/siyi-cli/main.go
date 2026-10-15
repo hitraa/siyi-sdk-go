@@ -77,7 +77,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error connecting to %s:%d: %v\n", *ip, *port, err)
 		os.Exit(1)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	switch *cmd {
 	case "info":
