@@ -1,6 +1,6 @@
 module github.com/hitraa/siyi-sdk-go
 
-go 1.25.0
+go 1.22
 
 require (
 	github.com/bluenviron/gortsplib/v4 v4.11.0
