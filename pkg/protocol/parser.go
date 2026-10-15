@@ -84,14 +84,15 @@ func (p *FrameParser) Feed(chunk []byte) ([]Frame, error) {
 			// Discard anything else
 
 		case stateAwaitSTX2:
-			if b == STXBytes[1] { // 0x66
+			switch b {
+			case STXBytes[1]: // 0x66
 				p.frameBuffer = append(p.frameBuffer, b)
 				p.state = stateReadCtrl
-			} else if b == STXBytes[0] { // 0x55
+			case STXBytes[0]: // 0x55
 				// Potential start of new frame
 				p.frameBuffer = append(p.frameBuffer[:0], b)
 				// Stay in stateAwaitSTX2
-			} else {
+			default:
 				// Invalid STX, reset
 				p.Reset()
 			}

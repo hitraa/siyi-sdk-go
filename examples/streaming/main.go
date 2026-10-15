@@ -42,7 +42,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to start streaming: %v\n", err)
 		os.Exit(1)
 	}
-	defer s.Stop()
+	defer func() { _ = s.Stop() }()
 
 	fmt.Println("Streaming started. Press Ctrl+C to terminate.")
 	<-ctx.Done()

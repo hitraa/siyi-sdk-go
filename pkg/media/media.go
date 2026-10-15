@@ -57,7 +57,7 @@ func (c *Client) get(ctx context.Context, endpoint string, params url.Values, ou
 	if err != nil {
 		return fmt.Errorf("media request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("HTTP %d from camera media API", resp.StatusCode)

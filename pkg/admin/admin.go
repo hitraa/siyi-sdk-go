@@ -66,7 +66,7 @@ func (c *Client) GetNetworkConfig(ctx context.Context) (*NetworkConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("network config request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("HTTP %d from camera admin API", resp.StatusCode)
@@ -105,7 +105,7 @@ func (c *Client) SetNetworkConfig(ctx context.Context, cfg NetworkConfig) error 
 	if err != nil {
 		return fmt.Errorf("set network config failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("HTTP %d from camera admin API", resp.StatusCode)
@@ -125,7 +125,7 @@ func (c *Client) Reboot(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("reboot request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }

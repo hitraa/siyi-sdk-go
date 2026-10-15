@@ -494,7 +494,7 @@ func (s *Server) handleWebSocketAttitude(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	ticker := time.NewTicker(100 * time.Millisecond) // 10Hz
 	defer ticker.Stop()

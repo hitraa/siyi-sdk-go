@@ -39,7 +39,7 @@ func Discover(ctx context.Context, broadcastAddr string, timeout time.Duration) 
 	if err != nil {
 		return nil, fmt.Errorf("listen UDP: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	raddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", broadcastAddr, protocol.DefaultUDPPort))
 	if err != nil {

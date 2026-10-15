@@ -44,7 +44,7 @@ func TestClient_UnsolicitedAttitudeStream(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock)
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	var receivedAtt models.GimbalAttitude
 	var wg sync.WaitGroup
@@ -88,7 +88,7 @@ func TestClient_RequestResponse(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock, siyi.WithTimeout(1*time.Second))
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// Handle firmware version request in goroutine
 	go func() {
@@ -121,7 +121,7 @@ func TestClient_TimeoutAndRetry(t *testing.T) {
 		siyi.WithRetryBaseDelay(10*time.Millisecond),
 	)
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// 0x01 is idempotent read -> should attempt 3 times total
 	_, err := client.GetFirmwareVersion(ctx)
@@ -143,7 +143,7 @@ func TestClient_FireAndForget(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock)
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// TakePhoto is fire-and-forget (CmdCapturePhotoRecordVideo)
 	err := client.TakePhoto(ctx)
@@ -172,7 +172,7 @@ func TestClient_CommandsComprehensive(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock, siyi.WithTimeout(1*time.Second))
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// 1. Hardware ID
 	go func() {
@@ -231,7 +231,7 @@ func TestClient_NoWaitCommands(t *testing.T) {
 	if err := client.Connect(ctx); err != nil {
 		t.Fatalf("Connect failed: %v", err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	if err := client.RotateNoWait(ctx, 20, -10); err != nil {
 		t.Errorf("RotateNoWait failed: %v", err)
@@ -254,7 +254,7 @@ func TestClient_Unsubscribe(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock)
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	var calls atomic.Int32
 	unsub := client.OnAttitude(func(att models.GimbalAttitude) {
@@ -297,7 +297,7 @@ func TestClient_ManualZoomFallback(t *testing.T) {
 	mock := transport.NewMockTransport(false)
 	client := siyi.NewClient(mock, siyi.WithTimeout(50*time.Millisecond), siyi.WithRetries(0))
 	_ = client.Connect(ctx)
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	// 0x05 stop command will timeout after 50ms without ACK.
 	// When client falls back to querying zoom magnification (0x18), respond with 3.5x.

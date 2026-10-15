@@ -17,7 +17,7 @@ func TestDiscover(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListenUDP failed: %v", err)
 	}
-	defer mockConn.Close()
+	defer func() { _ = mockConn.Close() }()
 
 	localPort := mockConn.LocalAddr().(*net.UDPAddr).Port
 
