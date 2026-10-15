@@ -15,15 +15,15 @@ Engineered adhering strictly to **SOLID design principles**, `siyi-sdk-go` provi
 
 Compatible with all SIYI optical and thermal gimbal cameras:
 
-| Camera Model | Protocol Support | Optical Zoom | Thermal Sensor | Laser Rangefinder | AI Tracking |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **ZT30** | Full | 30x Hybrid | Yes (640x512) | Yes (1000m) | Yes |
-| **ZT6** | Full | 6x Hybrid | Yes (640x512) | No | Yes |
-| **ZR30** | Full | 30x Optical | No | No | Yes |
-| **ZR10** | Full | 10x Optical | No | No | No |
-| **A8 mini** | Full | 6x Digital | No | No | Yes |
-| **A2 mini** | Full | Wide Angle | No | No | No |
-| **Quad-Spectrum** | Full | Optical + IR | Yes (Multi) | Yes | Yes |
+| Camera Model      | Protocol Support | Optical Zoom | Thermal Sensor | Laser Rangefinder | AI Tracking |
+| :---------------- | :--------------: | :----------: | :------------: | :---------------: | :---------: |
+| **ZT30**          |       Full       |  30x Hybrid  | Yes (640x512)  |    Yes (1000m)    |     Yes     |
+| **ZT6**           |       Full       |  6x Hybrid   | Yes (640x512)  |        No         |     Yes     |
+| **ZR30**          |       Full       | 30x Optical  |       No       |        No         |     Yes     |
+| **ZR10**          |       Full       | 10x Optical  |       No       |        No         |     No      |
+| **A8 mini**       |       Full       |  6x Digital  |       No       |        No         |     Yes     |
+| **A2 mini**       |       Full       |  Wide Angle  |       No       |        No         |     No      |
+| **Quad-Spectrum** |       Full       | Optical + IR |  Yes (Multi)   |        Yes        |     Yes     |
 
 ---
 
@@ -34,6 +34,11 @@ Compatible with all SIYI optical and thermal gimbal cameras:
   - `pkg/models`: Strongly-typed domain models, angle constraints, and firmware version decoders.
   - `pkg/commands`: Over 75 command serializers and deserializers.
   - `pkg/transport`: Extensible network/serial abstractions (`UDP`, `TCP` with 1Hz keepalive, `Serial UART`, and in-memory `Mock`).
+  - `pkg/thermal`: Radiometric 16-bit Y16 thermal matrix decoding, temperature ROI extraction, and color palette rendering (Ironbow, Rainbow, White/Black Hot).
+  - `pkg/mavlink`: MAVLink v2 Gimbal Protocol v2 client (MSG #284, #285) with quaternion/Euler conversions on UDP port 14550.
+  - `pkg/admin`: Port 80 camera web administration client for network IP/subnet/gateway configuration and reboot.
+  - `pkg/multicam`: Multi-camera and dual-payload cluster orchestrator for concurrent multi-gimbal control.
+  - `pkg/discovery`: Network broadcast auto-discovery for SIYI gimbal devices on the LAN.
   - `pkg/media`: HTTP client for port 82 TF card photo and video gallery management.
   - `pkg/stream`: Pure-Go RTSP stream client utilizing `gortsplib/v4` with automatic reconnection.
   - `pkg/siyi`: High-level thread-safe client with sequence generation, per-command concurrency locking, idempotent retries, and asynchronous push dispatchers.
@@ -49,9 +54,9 @@ Compatible with all SIYI optical and thermal gimbal cameras:
   - Live RTSP-to-MJPEG video stream proxy.
   - Media gallery browser and downloader.
 - **CLI Tool (`cmd/siyi-cli`)**:
-  - Full command-line inspection and control (`info`, `attitude`, `rotate`, `center`, `photo`, `record`, `zoom`, `focus`, `format`, `reboot`).
+  - Full command-line inspection and control (`info`, `attitude`, `rotate`, `center`, `photo`, `record`, `zoom`, `focus`, `format`, `reboot`, `discover`).
 - **Comprehensive Testing & CI/CD**:
-  - 100% race-detector clean (`go test -race`).
+  - 100% race-detector clean (`go test -race ./...`).
   - Table-driven unit and integration tests.
   - GitHub Actions matrix testing Go 1.22, 1.23, and 1.24 with `golangci-lint`.
 
@@ -62,13 +67,13 @@ Compatible with all SIYI optical and thermal gimbal cameras:
 ```mermaid
 graph TD
     App[User Application / CLI / Web Server] --> SDKClient[siyi.Client]
-    
+
     subgraph "High-Level Client Layer"
         SDKClient --> CmdRouter[Command Router & Future Matcher]
         SDKClient --> PushDispatcher[Telemetry Push Dispatcher]
         SDKClient --> Heartbeat[TCP 1Hz Heartbeat Worker]
     end
-    
+
     subgraph "Command & Model Layer"
         CmdRouter --> Encoders[pkg/commands Encoders/Decoders]
         Encoders --> Models[pkg/models Strongly-Typed Structs]
@@ -308,6 +313,7 @@ func main() {
 The SDK includes a built-in, standalone web control dashboard. All assets (HTML, CSS, JS) are embedded into the Go executable via `embed.FS` with zero external static file dependencies.
 
 ### Features
+
 - Real-time Gimbal Attitude Indicator (10Hz WebSocket feed)
 - Virtual PTZ Joystick and Speed Sliders
 - Shutter & Video Record Toggle with status indicators
