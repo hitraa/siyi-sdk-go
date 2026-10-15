@@ -4,12 +4,14 @@ import (
 	"context"
 	"log/slog"
 	"math"
+	"reflect"
 	"sync"
 	"time"
 
 	"github.com/hitraa/siyi-sdk-go/pkg/commands"
 	"github.com/hitraa/siyi-sdk-go/pkg/models"
 	"github.com/hitraa/siyi-sdk-go/pkg/protocol"
+	"github.com/hitraa/siyi-sdk-go/pkg/stream"
 	"github.com/hitraa/siyi-sdk-go/pkg/transport"
 )
 
@@ -295,39 +297,101 @@ func (c *Client) dispatchStream(frame protocol.Frame) {
 	}
 }
 
-// OnAttitude registers a listener for real-time attitude pushes.
-func (c *Client) OnAttitude(cb func(models.GimbalAttitude)) {
+// Unsubscribe is a function that cancels a telemetry subscription.
+type Unsubscribe func()
+
+// OnAttitude registers a listener for real-time attitude pushes and returns an unsubscribe func.
+func (c *Client) OnAttitude(cb func(models.GimbalAttitude)) Unsubscribe {
 	c.cbMu.Lock()
 	defer c.cbMu.Unlock()
 	c.attitudeCbs = append(c.attitudeCbs, cb)
+	return func() {
+		c.cbMu.Lock()
+		defer c.cbMu.Unlock()
+		for i, fn := range c.attitudeCbs {
+			if reflect.ValueOf(fn).Pointer() == reflect.ValueOf(cb).Pointer() {
+				c.attitudeCbs = append(c.attitudeCbs[:i], c.attitudeCbs[i+1:]...)
+				break
+			}
+		}
+	}
 }
 
-// OnFunctionFeedback registers a listener for camera function feedback pushes.
-func (c *Client) OnFunctionFeedback(cb func(models.FunctionFeedback)) {
+// OnFunctionFeedback registers a listener for camera function feedback pushes and returns an unsubscribe func.
+func (c *Client) OnFunctionFeedback(cb func(models.FunctionFeedback)) Unsubscribe {
 	c.cbMu.Lock()
 	defer c.cbMu.Unlock()
 	c.feedbackCbs = append(c.feedbackCbs, cb)
+	return func() {
+		c.cbMu.Lock()
+		defer c.cbMu.Unlock()
+		for i, fn := range c.feedbackCbs {
+			if reflect.ValueOf(fn).Pointer() == reflect.ValueOf(cb).Pointer() {
+				c.feedbackCbs = append(c.feedbackCbs[:i], c.feedbackCbs[i+1:]...)
+				break
+			}
+		}
+	}
 }
 
-// OnLaser registers a listener for laser distance telemetry pushes.
-func (c *Client) OnLaser(cb func(models.LaserDistance)) {
+// OnLaser registers a listener for laser distance telemetry pushes and returns an unsubscribe func.
+func (c *Client) OnLaser(cb func(models.LaserDistance)) Unsubscribe {
 	c.cbMu.Lock()
 	defer c.cbMu.Unlock()
 	c.laserCbs = append(c.laserCbs, cb)
+	return func() {
+		c.cbMu.Lock()
+		defer c.cbMu.Unlock()
+		for i, fn := range c.laserCbs {
+			if reflect.ValueOf(fn).Pointer() == reflect.ValueOf(cb).Pointer() {
+				c.laserCbs = append(c.laserCbs[:i], c.laserCbs[i+1:]...)
+				break
+			}
+		}
+	}
 }
 
-// OnAITracking registers a listener for AI bounding-box tracking pushes.
-func (c *Client) OnAITracking(cb func(models.AITrackingTarget)) {
+// OnAITracking registers a listener for AI bounding-box tracking pushes and returns an unsubscribe func.
+func (c *Client) OnAITracking(cb func(models.AITrackingTarget)) Unsubscribe {
 	c.cbMu.Lock()
 	defer c.cbMu.Unlock()
 	c.aiCbs = append(c.aiCbs, cb)
+	return func() {
+		c.cbMu.Lock()
+		defer c.cbMu.Unlock()
+		for i, fn := range c.aiCbs {
+			if reflect.ValueOf(fn).Pointer() == reflect.ValueOf(cb).Pointer() {
+				c.aiCbs = append(c.aiCbs[:i], c.aiCbs[i+1:]...)
+				break
+			}
+		}
+	}
 }
 
-// OnConnectionStatus registers a listener for connection changes.
-func (c *Client) OnConnectionStatus(cb func(bool)) {
+// OnConnectionStatus registers a listener for connection changes and returns an unsubscribe func.
+func (c *Client) OnConnectionStatus(cb func(bool)) Unsubscribe {
 	c.cbMu.Lock()
 	defer c.cbMu.Unlock()
 	c.connStatusCbs = append(c.connStatusCbs, cb)
+	return func() {
+		c.cbMu.Lock()
+		defer c.cbMu.Unlock()
+		for i, fn := range c.connStatusCbs {
+			if reflect.ValueOf(fn).Pointer() == reflect.ValueOf(cb).Pointer() {
+				c.connStatusCbs = append(c.connStatusCbs[:i], c.connStatusCbs[i+1:]...)
+				break
+			}
+		}
+	}
+}
+
+func (c *Client) sendCommandNoWait(ctx context.Context, cmdID uint8, payload []byte) error {
+	if !c.IsConnected() {
+		return transport.ErrNotConnected
+	}
+	seq := c.nextSeq()
+	frame := protocol.Build(cmdID, payload, seq, false)
+	return c.transport.Send(ctx, frame.ToBytes())
 }
 
 func (c *Client) sendCommand(ctx context.Context, cmdID uint8, payload []byte) ([]byte, error) {
@@ -571,6 +635,16 @@ func (c *Client) Rotate(ctx context.Context, yaw, pitch int) error {
 	return commands.DecodeRotationAck(data)
 }
 
+// RotateNoWait sends a gimbal velocity command without waiting for an ACK (CMD 0x07).
+// Intended for high-rate visual servoing control loops (50-100Hz).
+func (c *Client) RotateNoWait(ctx context.Context, yaw, pitch int) error {
+	payload, err := commands.EncodeRotation(yaw, pitch)
+	if err != nil {
+		return err
+	}
+	return c.sendCommandNoWait(ctx, protocol.CmdGimbalRotation, payload)
+}
+
 // OneKeyCentering triggers automatic recentering or downward looking position (0x08).
 func (c *Client) OneKeyCentering(ctx context.Context, action models.CenteringAction) error {
 	payload, err := commands.EncodeOneKeyCentering(action)
@@ -593,6 +667,13 @@ func (c *Client) SetGimbalAttitude(ctx context.Context, yawDeg, pitchDeg float64
 	return commands.DecodeSetAttitudeAck(data)
 }
 
+// SetGimbalAttitudeNoWait sends a gimbal position setpoint without waiting for an ACK (CMD 0x0E).
+// Fire-and-forget variant of SetGimbalAttitude for high-rate control loops.
+func (c *Client) SetGimbalAttitudeNoWait(ctx context.Context, yawDeg, pitchDeg float64) error {
+	payload := commands.EncodeSetAttitude(yawDeg, pitchDeg)
+	return c.sendCommandNoWait(ctx, protocol.CmdSetGimbalAttitude, payload)
+}
+
 // GetGimbalMode queries gimbal lock/follow/FPV mode (0x19).
 func (c *Client) GetGimbalMode(ctx context.Context) (models.GimbalMotionMode, error) {
 	data, err := c.sendCommand(ctx, protocol.CmdRequestGimbalMode, commands.EncodeGimbalMode())
@@ -613,6 +694,15 @@ func (c *Client) SetSingleAxis(ctx context.Context, angleDeg float64, axis int) 
 		return models.SetAttitudeAck{}, err
 	}
 	return commands.DecodeSingleAxisAck(data)
+}
+
+// SetSingleAxisNoWait sends a single-axis position setpoint without waiting for an ACK (CMD 0x41).
+func (c *Client) SetSingleAxisNoWait(ctx context.Context, angleDeg float64, axis int) error {
+	payload, err := commands.EncodeSingleAxis(angleDeg, axis)
+	if err != nil {
+		return err
+	}
+	return c.sendCommandNoWait(ctx, protocol.CmdSingleAxisAttitude, payload)
 }
 
 // -----------------------------------------------------------------------------
@@ -1123,3 +1213,22 @@ func (c *Client) ManualThermalShutter(ctx context.Context) error {
 	}
 	return commands.DecodeManualThermalShutterAck(data)
 }
+
+// -----------------------------------------------------------------------------
+// RTSP Streaming Convenience
+// -----------------------------------------------------------------------------
+
+// CreateStream constructs a stream.Stream receiver configured for this camera's RTSP endpoint.
+func (c *Client) CreateStream(streamType models.StreamType, gen models.CameraGeneration) *stream.Stream {
+	host := protocol.DefaultIP
+	if ipGetter, ok := c.transport.(interface{ IP() string }); ok {
+		if ip := ipGetter.IP(); ip != "" {
+			host = ip
+		}
+	}
+	rtspURL := stream.BuildRTSPURL(host, streamType, gen)
+	return stream.New(stream.Config{
+		RTSPURL: rtspURL,
+	})
+}
+

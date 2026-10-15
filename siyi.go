@@ -16,6 +16,7 @@ type (
 	ClientOption = siyi.ClientOption
 	ClientConfig = siyi.ClientConfig
 	TimeoutError = siyi.TimeoutError
+	Unsubscribe  = siyi.Unsubscribe
 )
 
 // Re-export common errors

@@ -156,6 +156,16 @@ func (t *TCPTransport) IsConnected() bool {
 	return t.connected
 }
 
+// IP returns the configured remote IP address.
+func (t *TCPTransport) IP() string {
+	return t.ip
+}
+
+// Port returns the configured remote port.
+func (t *TCPTransport) Port() int {
+	return t.port
+}
+
 // SupportsHeartbeat returns true for TCP (heartbeat required).
 func (t *TCPTransport) SupportsHeartbeat() bool {
 	return true

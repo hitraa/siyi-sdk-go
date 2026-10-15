@@ -45,6 +45,19 @@ const (
 	GimbalMotionModeFPV    GimbalMotionMode = 2
 )
 
+func (m GimbalMotionMode) String() string {
+	switch m {
+	case GimbalMotionModeLock:
+		return "Lock"
+	case GimbalMotionModeFollow:
+		return "Follow"
+	case GimbalMotionModeFPV:
+		return "FPV"
+	default:
+		return "Unknown"
+	}
+}
+
 // MountingDirection indicates whether the gimbal is upright or inverted.
 type MountingDirection uint8
 
@@ -53,6 +66,17 @@ const (
 	MountingDirectionNormal   MountingDirection = 1
 	MountingDirectionInverted MountingDirection = 2
 )
+
+func (m MountingDirection) String() string {
+	switch m {
+	case MountingDirectionNormal:
+		return "Normal"
+	case MountingDirectionInverted:
+		return "Inverted"
+	default:
+		return "Reserved"
+	}
+}
 
 // CenteringAction represents one-key centering actions.
 type CenteringAction uint8
@@ -63,6 +87,21 @@ const (
 	CenteringActionCenter         CenteringAction = 3
 	CenteringActionDownward       CenteringAction = 4
 )
+
+func (c CenteringAction) String() string {
+	switch c {
+	case CenteringActionOneKeyCenter:
+		return "OneKeyCenter"
+	case CenteringActionCenterDownward:
+		return "CenterDownward"
+	case CenteringActionCenter:
+		return "Center"
+	case CenteringActionDownward:
+		return "Downward"
+	default:
+		return "Unknown"
+	}
+}
 
 // ControlMode represents gimbal control mode (used in ArduPilot integration).
 type ControlMode uint8
@@ -92,6 +131,21 @@ const (
 	RecordingStateNoTFCard     RecordingState = 2
 	RecordingStateDataLoss     RecordingState = 3
 )
+
+func (r RecordingState) String() string {
+	switch r {
+	case RecordingStateNotRecording:
+		return "NotRecording"
+	case RecordingStateRecording:
+		return "Recording"
+	case RecordingStateNoTFCard:
+		return "NoTFCard"
+	case RecordingStateDataLoss:
+		return "DataLoss"
+	default:
+		return "Unknown"
+	}
+}
 
 // FunctionFeedback response codes from camera.
 type FunctionFeedback uint8

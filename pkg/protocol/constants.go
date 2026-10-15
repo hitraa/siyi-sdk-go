@@ -86,6 +86,11 @@ var (
 	HeartbeatFrame = []byte{0x55, 0x66, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x59, 0x8B}
 )
 
+// Camera timing constants
+const (
+	CameraBootSeconds = 30
+)
+
 // Laser distance bounds
 const (
 	LaserMinM     = 5

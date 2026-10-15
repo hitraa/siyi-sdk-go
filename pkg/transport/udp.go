@@ -167,6 +167,16 @@ func (u *UDPTransport) IsConnected() bool {
 	return u.connected
 }
 
+// IP returns the configured remote IP address.
+func (u *UDPTransport) IP() string {
+	return u.ip
+}
+
+// Port returns the configured remote port.
+func (u *UDPTransport) Port() int {
+	return u.port
+}
+
 // SupportsHeartbeat returns false for UDP.
 func (u *UDPTransport) SupportsHeartbeat() bool {
 	return false

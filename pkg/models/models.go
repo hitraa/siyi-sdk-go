@@ -177,6 +177,16 @@ type LaserTargetLatLon struct {
 	LonE7 int32 `json:"lon_e7"`
 }
 
+// Latitude returns the target latitude in degrees.
+func (l LaserTargetLatLon) Latitude() float64 {
+	return float64(l.LatE7) / 1e7
+}
+
+// Longitude returns the target longitude in degrees.
+func (l LaserTargetLatLon) Longitude() float64 {
+	return float64(l.LonE7) / 1e7
+}
+
 // ZoomRange carries maximum optical zoom capability (0x16).
 type ZoomRange struct {
 	MaxInt   uint8 `json:"max_int"`

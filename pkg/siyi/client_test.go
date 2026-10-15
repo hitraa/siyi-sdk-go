@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -222,3 +223,72 @@ func TestClient_CommandsComprehensive(t *testing.T) {
 		t.Errorf("GetIP failed: %v", err)
 	}
 }
+
+func TestClient_NoWaitCommands(t *testing.T) {
+	ctx := context.Background()
+	mock := transport.NewMockTransport(false)
+	client := siyi.NewClient(mock)
+	if err := client.Connect(ctx); err != nil {
+		t.Fatalf("Connect failed: %v", err)
+	}
+	defer client.Close()
+
+	if err := client.RotateNoWait(ctx, 20, -10); err != nil {
+		t.Errorf("RotateNoWait failed: %v", err)
+	}
+	if err := client.SetGimbalAttitudeNoWait(ctx, 45.0, -15.0); err != nil {
+		t.Errorf("SetGimbalAttitudeNoWait failed: %v", err)
+	}
+	if err := client.SetSingleAxisNoWait(ctx, 10.0, 0); err != nil {
+		t.Errorf("SetSingleAxisNoWait failed: %v", err)
+	}
+
+	sent := mock.SentFrames()
+	if len(sent) != 3 {
+		t.Errorf("expected 3 sent frames, got %d", len(sent))
+	}
+}
+
+func TestClient_Unsubscribe(t *testing.T) {
+	ctx := context.Background()
+	mock := transport.NewMockTransport(false)
+	client := siyi.NewClient(mock)
+	_ = client.Connect(ctx)
+	defer client.Close()
+
+	var calls atomic.Int32
+	unsub := client.OnAttitude(func(att models.GimbalAttitude) {
+		calls.Add(1)
+	})
+
+	attPayload := []byte{
+		0x64, 0x00, 0x32, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+	attFrame := protocol.Build(protocol.CmdRequestGimbalAttitude, attPayload, 1, false).ToBytes()
+	mock.QueueResponse(attFrame)
+	time.Sleep(50 * time.Millisecond)
+
+	if calls.Load() != 1 {
+		t.Errorf("expected 1 call before unsubscribe, got %d", calls.Load())
+	}
+
+	unsub()
+
+	mock.QueueResponse(attFrame)
+	time.Sleep(50 * time.Millisecond)
+
+	if calls.Load() != 1 {
+		t.Errorf("expected still 1 call after unsubscribe, got %d", calls.Load())
+	}
+}
+
+func TestClient_CreateStream(t *testing.T) {
+	udp := transport.NewUDPTransport("192.168.144.25", 37260)
+	client := siyi.NewClient(udp)
+	s := client.CreateStream(models.StreamTypeMain, models.CameraGenerationNew)
+	if s == nil {
+		t.Fatal("expected non-nil stream from CreateStream")
+	}
+}
+
