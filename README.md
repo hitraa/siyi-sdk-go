@@ -401,6 +401,7 @@ Comprehensive documentation guides:
 - **[RTSP Video Streaming Guide](docs/streaming.md)**: Pure Go RTSP video streaming, URL scheme across camera generations, reconnection.
 - **[Camera Media HTTP API (Port 82)](docs/media_http_api.md)**: TF card photo and video gallery management, file listing, count, and downloading.
 - **[Web UI Dashboard Guide](docs/web_ui.md)**: Running the embedded real-time web dashboard, WebSocket telemetry, and video proxy.
+- **[Changelog](CHANGELOG.md)**: Full release notes, Keep a Changelog history, and upstream bugfix tracking.
 
 ---
 

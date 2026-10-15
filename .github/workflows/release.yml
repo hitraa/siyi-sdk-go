@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -19,13 +20,25 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version: stable
+          cache: true
 
-      - name: Verify version
+      - name: Verify version and changelog
         shell: bash
         run: |
           version="$(sed -n 's/^const Version = "\(.*\)"$/\1/p' version.go)"
           test -n "$version"
           test "$GITHUB_REF_NAME" = "v$version"
+          grep -Fq "## [v$version]" CHANGELOG.md
+
+      - name: Extract release notes
+        shell: bash
+        run: |
+          version="$(sed -n 's/^const Version = "\(.*\)"$/\1/p' version.go)"
+          awk -v ver="## [v$version]" '
+            index($0, ver) { flag = 1; next }
+            flag && /^## / { flag = 0; exit }
+            flag { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
 
       - name: Run vet & tests
         run: |
@@ -35,4 +48,15 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+        run: |
+          if [ -s RELEASE_NOTES.md ]; then
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file RELEASE_NOTES.md \
+              --verify-tag
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes \
+              --verify-tag
+          fi
