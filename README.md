@@ -15,15 +15,16 @@ Engineered adhering strictly to **SOLID design principles**, `siyi-sdk-go` provi
 
 Compatible with all SIYI optical and thermal gimbal cameras:
 
-| Camera Model      | Protocol Support | Optical Zoom | Thermal Sensor | Laser Rangefinder | AI Tracking |
-| :---------------- | :--------------: | :----------: | :------------: | :---------------: | :---------: |
-| **ZT30**          |       Full       |  30x Hybrid  | Yes (640x512)  |    Yes (1000m)    |     Yes     |
-| **ZT6**           |       Full       |  6x Hybrid   | Yes (640x512)  |        No         |     Yes     |
-| **ZR30**          |       Full       | 30x Optical  |       No       |        No         |     Yes     |
-| **ZR10**          |       Full       | 10x Optical  |       No       |        No         |     No      |
-| **A8 mini**       |       Full       |  6x Digital  |       No       |        No         |     Yes     |
-| **A2 mini**       |       Full       |  Wide Angle  |       No       |        No         |     No      |
-| **Quad-Spectrum** |       Full       | Optical + IR |  Yes (Multi)   |        Yes        |     Yes     |
+| Camera Model    | Protocol Support |      Zoom Capability      | Thermal Sensor | Laser Rangefinder | AI Tracking |
+| :-------------- | :--------------: | :-----------------------: | :------------: | :---------------: | :---------: |
+| **UniPod MT11** |       Full       | 11x Optical / 165x Hybrid | Yes (640x512)  |    Yes (1200m)    |     Yes     |
+| **ZT30**        |       Full       |        30x Hybrid         | Yes (640x512)  |    Yes (1000m)    |     Yes     |
+| **ZT6**         |       Full       |         6x Hybrid         | Yes (640x512)  |        No         |     Yes     |
+| **A8 mini**     |       Full       |        6x Digital         |       No       |        No         |     Yes     |
+| **ZR30**        |       Full       |        30x Optical        |       No       |        No         |     Yes     |
+| **ZR10**        |       Full       |        10x Optical        |       No       |        No         |     No      |
+| **A2 mini**     |       Full       |        Wide Angle         |       No       |        No         |     No      |
+| **R1M**         | Streaming & Rec  |         Fixed FPV         |       No       |        No         |     No      |
 
 ---
 

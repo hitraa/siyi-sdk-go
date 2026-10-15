@@ -24,16 +24,40 @@ func TestFirmwareVersion_Decode(t *testing.T) {
 }
 
 func TestHardwareID_ProductID(t *testing.T) {
-	hw := models.HardwareID{Raw: []byte("731234567890")}
-	pid, err := hw.ProductID()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	cases := []struct {
+		hexStr   string
+		wantPID  models.ProductID
+		wantName string
+		wantGen  models.CameraGeneration
+	}{
+		{"631234567890", models.ProductZR10Alternate, "ZR10", models.CameraGenerationOld},
+		{"6B1234567890", models.ProductZR10, "ZR10", models.CameraGenerationOld},
+		{"731234567890", models.ProductA8Mini, "A8 Mini", models.CameraGenerationOld},
+		{"751234567890", models.ProductA2Mini, "A2 Mini", models.CameraGenerationOld},
+		{"771234567890", models.ProductR1M, "R1M", models.CameraGenerationOld},
+		{"781234567890", models.ProductZR30, "ZR30", models.CameraGenerationOld},
+		{"7A1234567890", models.ProductQuadSpectrum, "UniPod MT11", models.CameraGenerationNew},
+		{"801234567890", models.ProductZT30, "ZT30", models.CameraGenerationNew},
+		{"821234567890", models.ProductZT6Alternate, "ZT6", models.CameraGenerationNew},
+		{"831234567890", models.ProductZT6, "ZT6", models.CameraGenerationNew},
+		{"851234567890", models.ProductZT30Alternate, "ZT30", models.CameraGenerationNew},
 	}
-	if pid != models.ProductA8Mini {
-		t.Errorf("ProductID = %v, want ProductA8Mini", pid)
-	}
-	if pid.String() != "A8 Mini" {
-		t.Errorf("String = %s, want 'A8 Mini'", pid.String())
+
+	for _, tc := range cases {
+		hw := models.HardwareID{Raw: []byte(tc.hexStr)}
+		pid, err := hw.ProductID()
+		if err != nil {
+			t.Fatalf("unexpected error for %s: %v", tc.hexStr, err)
+		}
+		if pid != tc.wantPID {
+			t.Errorf("hex %s: got PID %v, want %v", tc.hexStr, pid, tc.wantPID)
+		}
+		if pid.String() != tc.wantName {
+			t.Errorf("hex %s: got name %s, want %s", tc.hexStr, pid.String(), tc.wantName)
+		}
+		if pid.Generation() != tc.wantGen {
+			t.Errorf("hex %s: got gen %v, want %v", tc.hexStr, pid.Generation(), tc.wantGen)
+		}
 	}
 
 	short := models.HardwareID{Raw: []byte("7")}

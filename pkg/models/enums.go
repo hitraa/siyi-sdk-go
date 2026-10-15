@@ -8,8 +8,10 @@ const (
 	ProductZR10          ProductID = 0x6B
 	ProductA8Mini        ProductID = 0x73
 	ProductA2Mini        ProductID = 0x75
+	ProductR1M           ProductID = 0x77
 	ProductZR30          ProductID = 0x78
-	ProductQuadSpectrum  ProductID = 0x7A
+	ProductQuadSpectrum  ProductID = 0x7A // UniPod MT11 Quad-Sensor Pod
+	ProductUniPodMT11    ProductID = 0x7A // Alias for ProductQuadSpectrum
 	ProductZT30          ProductID = 0x80
 	ProductZT6Alternate  ProductID = 0x82
 	ProductZT6           ProductID = 0x83
@@ -24,10 +26,12 @@ func (p ProductID) String() string {
 		return "A8 Mini"
 	case ProductA2Mini:
 		return "A2 Mini"
+	case ProductR1M:
+		return "R1M"
 	case ProductZR30:
 		return "ZR30"
-	case ProductQuadSpectrum:
-		return "Quad Spectrum"
+	case ProductQuadSpectrum: // also ProductUniPodMT11
+		return "UniPod MT11"
 	case ProductZT30, ProductZT30Alternate:
 		return "ZT30"
 	case ProductZT6, ProductZT6Alternate:
@@ -40,7 +44,7 @@ func (p ProductID) String() string {
 // Generation returns the camera streaming generation (Old vs New) for this product ID.
 func (p ProductID) Generation() CameraGeneration {
 	switch p {
-	case ProductZT30, ProductZT30Alternate, ProductZT6, ProductZT6Alternate:
+	case ProductZT30, ProductZT30Alternate, ProductZT6, ProductZT6Alternate, ProductQuadSpectrum:
 		return CameraGenerationNew
 	default:
 		return CameraGenerationOld
