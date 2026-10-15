@@ -25,7 +25,7 @@ jobs:
       - name: Verify version and changelog
         shell: bash
         run: |
-          version="$(sed -n 's/^const Version = "\(.*\)"$/\1/p' version.go)"
+          version="$(grep -E '^(const|var) Version =' version.go | cut -d'"' -f2)"
           test -n "$version"
           test "$GITHUB_REF_NAME" = "v$version"
           grep -Fq "## [v$version]" CHANGELOG.md
@@ -33,7 +33,7 @@ jobs:
       - name: Extract release notes
         shell: bash
         run: |
-          version="$(sed -n 's/^const Version = "\(.*\)"$/\1/p' version.go)"
+          version="$(grep -E '^(const|var) Version =' version.go | cut -d'"' -f2)"
           awk -v ver="## [v$version]" '
             index($0, ver) { flag = 1; next }
             flag && /^## / { flag = 0; exit }
@@ -45,18 +45,82 @@ jobs:
           go vet ./...
           go test -race ./...
 
+      - name: Build cross-platform binaries and packages
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+
+          targets=(
+            "linux/amd64"
+            "linux/arm64"
+            "linux/arm/7"
+            "darwin/amd64"
+            "darwin/arm64"
+            "windows/amd64"
+            "windows/arm64"
+          )
+
+          for target in "${targets[@]}"; do
+            os=$(echo "$target" | cut -d/ -f1)
+            arch=$(echo "$target" | cut -d/ -f2)
+            arm=$(echo "$target" | cut -s -d/ -f3)
+
+            arch_name="$arch"
+            if [ -n "$arm" ]; then
+              arch_name="armv${arm}"
+            fi
+
+            ext=""
+            if [ "$os" = "windows" ]; then
+              ext=".exe"
+            fi
+
+            staging="siyi_${version}_${os}_${arch_name}"
+            mkdir -p "dist/$staging"
+
+            echo "Building $staging..."
+            GOARM="$arm" GOOS="$os" GOARCH="$arch" CGO_ENABLED=0 go build \
+              -trimpath \
+              -ldflags="-s -w -X 'github.com/hitraa/siyi-sdk-go.Version=${version}'" \
+              -o "dist/$staging/siyi-cli${ext}" ./cmd/siyi-cli
+
+            GOARM="$arm" GOOS="$os" GOARCH="$arch" CGO_ENABLED=0 go build \
+              -trimpath \
+              -ldflags="-s -w -X 'github.com/hitraa/siyi-sdk-go.Version=${version}'" \
+              -o "dist/$staging/siyi-web${ext}" ./cmd/siyi-web
+
+            cp README.md LICENSE "dist/$staging/" 2>/dev/null || true
+
+            cd dist
+            if [ "$os" = "windows" ]; then
+              zip -rq "${staging}.zip" "$staging"
+            else
+              tar -czf "${staging}.tar.gz" "$staging"
+            fi
+            rm -rf "$staging"
+            cd ..
+          done
+
+          cd dist
+          sha256sum *.{tar.gz,zip} > checksums.txt
+          cd ..
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          args=(
+            "$GITHUB_REF_NAME"
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+            --title "$GITHUB_REF_NAME"
+            --verify-tag
+          )
           if [ -s RELEASE_NOTES.md ]; then
-            gh release create "$GITHUB_REF_NAME" \
-              --title "$GITHUB_REF_NAME" \
-              --notes-file RELEASE_NOTES.md \
-              --verify-tag
+            args+=(--notes-file RELEASE_NOTES.md)
           else
-            gh release create "$GITHUB_REF_NAME" \
-              --title "$GITHUB_REF_NAME" \
-              --generate-notes \
-              --verify-tag
+            args+=(--generate-notes)
           fi
+          gh release create "${args[@]}"

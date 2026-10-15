@@ -17,7 +17,9 @@ func main() {
 	ip := flag.String("ip", protocol.DefaultIP, "Camera IP address")
 	port := flag.Int("port", protocol.DefaultUDPPort, "UDP/TCP port")
 	proto := flag.String("proto", "udp", "Protocol (udp, tcp)")
-	cmd := flag.String("cmd", "info", "Command: info, attitude, center, rotate, photo, record, zoom, focus, laser, format, reboot, rtsp-url, discover")
+	cmd := flag.String("cmd", "info", "Command: info, attitude, center, rotate, photo, record, zoom, focus, laser, format, reboot, rtsp-url, discover, version")
+	showVersion := flag.Bool("v", false, "Print version and exit")
+	showVersionLong := flag.Bool("version", false, "Print version and exit")
 
 	// Command-specific parameters
 	yaw := flag.Int("yaw", 0, "Yaw velocity (-100..100) for rotate")
@@ -29,6 +31,11 @@ func main() {
 	rebootTarget := flag.String("reboot-target", "both", "Reboot target: camera, gimbal, or both")
 
 	flag.Parse()
+
+	if *showVersion || *showVersionLong || *cmd == "version" {
+		fmt.Printf("siyi-cli version %s\n", siyi.Version)
+		return
+	}
 
 	if *cmd == "discover" {
 		fmt.Println("Probing local network for SIYI cameras (UDP 37260 broadcast)...")

@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/hitraa/siyi-sdk-go"
 	"github.com/hitraa/siyi-sdk-go/pkg/protocol"
 	"github.com/hitraa/siyi-sdk-go/web"
 )
@@ -15,7 +17,14 @@ import (
 func main() {
 	port := flag.Int("port", 8082, "Web UI HTTP listening port")
 	cameraIP := flag.String("ip", protocol.DefaultIP, "Target SIYI gimbal camera IP address")
+	showVersion := flag.Bool("v", false, "Print version and exit")
+	showVersionLong := flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
+
+	if *showVersion || *showVersionLong {
+		fmt.Printf("siyi-web version %s\n", siyi.Version)
+		return
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
