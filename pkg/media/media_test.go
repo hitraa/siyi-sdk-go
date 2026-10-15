@@ -16,7 +16,7 @@ func TestMediaClient(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/cgi-bin/media.cgi/api/v1/getdirectories", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"success": true,
 			"data": {
 				"directories": [
@@ -28,7 +28,7 @@ func TestMediaClient(t *testing.T) {
 
 	mux.HandleFunc("/cgi-bin/media.cgi/api/v1/getmediacount", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"success": true,
 			"data": {
 				"count": 2
@@ -38,7 +38,7 @@ func TestMediaClient(t *testing.T) {
 
 	mux.HandleFunc("/cgi-bin/media.cgi/api/v1/getmedialist", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"success": true,
 			"data": {
 				"list": [

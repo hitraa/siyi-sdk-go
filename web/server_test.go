@@ -24,7 +24,7 @@ func TestWebServer_Routes(t *testing.T) {
 		_ = srv.Start(ctx)
 	}()
 	time.Sleep(100 * time.Millisecond)
-	defer srv.Stop(ctx)
+	defer func() { _ = srv.Stop(ctx) }()
 
 	client := &http.Client{Timeout: 1 * time.Second}
 
