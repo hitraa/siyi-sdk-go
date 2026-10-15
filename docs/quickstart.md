@@ -18,12 +18,12 @@ Requires **Go 1.22+**.
 
 The SDK supports three physical transports and one testing mock:
 
-| Transport | Function | Use Case |
-|---|---|---|
-| **UDP** | `siyi.ConnectUDP(ctx, ip, port, opts...)` | Low-latency network control (Ethernet/WiFi). Recommended default. |
-| **TCP** | `siyi.ConnectTCP(ctx, ip, port, opts...)` | Reliable stream over TCP; automatically runs 1Hz keepalive heartbeat. |
-| **Serial**| `siyi.ConnectSerial(ctx, device, baud, opts...)` | Direct UART RS-232 link (e.g. `/dev/ttyUSB0` at 115200 baud). |
-| **Mock** | `transport.NewMockTransport()` | In-memory unit and integration testing without hardware. |
+| Transport  | Function                                         | Use Case                                                              |
+| ---------- | ------------------------------------------------ | --------------------------------------------------------------------- |
+| **UDP**    | `siyi.ConnectUDP(ctx, ip, port, opts...)`        | Low-latency network control (Ethernet/WiFi). Recommended default.     |
+| **TCP**    | `siyi.ConnectTCP(ctx, ip, port, opts...)`        | Reliable stream over TCP; automatically runs 1Hz keepalive heartbeat. |
+| **Serial** | `siyi.ConnectSerial(ctx, device, baud, opts...)` | Direct UART RS-232 link (e.g. `/dev/ttyUSB0` at 115200 baud).         |
+| **Mock**   | `transport.NewMockTransport()`                   | In-memory unit and integration testing without hardware.              |
 
 ---
 

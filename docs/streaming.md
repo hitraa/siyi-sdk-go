@@ -18,10 +18,10 @@ It does not require system GStreamer plugins or OpenCV CGo bindings; it compiles
 
 SIYI cameras fall into two generations with different RTSP path conventions:
 
-| Generation | Camera Models | Main Stream URL | Sub Stream URL |
-|---|---|---|---|
-| **Old Generation** | ZR30, ZR10, A8 mini, A2 mini, R1M | `rtsp://<ip>:8554/main.264` | *N/A* |
-| **New Generation** | ZT30, ZT6 | `rtsp://<ip>:8554/video1` | `rtsp://<ip>:8554/video2` |
+| Generation         | Camera Models                     | Main Stream URL             | Sub Stream URL            |
+| ------------------ | --------------------------------- | --------------------------- | ------------------------- |
+| **Old Generation** | ZR30, ZR10, A8 mini, A2 mini, R1M | `rtsp://<ip>:8554/main.264` | _N/A_                     |
+| **New Generation** | ZT30, ZT6                         | `rtsp://<ip>:8554/video1`   | `rtsp://<ip>:8554/video2` |
 
 Use `stream.BuildRTSPURL`:
 

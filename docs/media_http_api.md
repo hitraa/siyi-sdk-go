@@ -8,13 +8,13 @@ The `pkg/media` package provides an idiomatic Go client for this API.
 
 ## Connection Endpoints
 
-| Property | Value |
-|---|---|
-| **Default Host** | `192.168.144.25` |
-| **Port** | `82` |
-| **Base URL** | `http://192.168.144.25:82/cgi-bin/media.cgi` |
-| **Transport** | HTTP/1.1 GET with query string parameters |
-| **Authentication** | None required |
+| Property           | Value                                        |
+| ------------------ | -------------------------------------------- |
+| **Default Host**   | `192.168.144.25`                             |
+| **Port**           | `82`                                         |
+| **Base URL**       | `http://192.168.144.25:82/cgi-bin/media.cgi` |
+| **Transport**      | HTTP/1.1 GET with query string parameters    |
+| **Authentication** | None required                                |
 
 ---
 
@@ -70,18 +70,24 @@ func main() {
 ## API Methods
 
 ### `NewClient(host string, port ...int) *Client`
+
 Constructs a new media HTTP client. If `host` is empty, defaults to `192.168.144.25`. If `port` is omitted, defaults to `82`.
 
 ### `ListDirectories(ctx context.Context, mediaType models.MediaType) ([]models.MediaDirectory, error)`
+
 Returns all date-based directories for the given media type (`models.MediaTypeImages` or `models.MediaTypeVideos`).
 
 ### `GetMediaCount(ctx context.Context, mediaType models.MediaType, path string) (int, error)`
+
 Returns total file count under `path`. Pass an empty string `""` to query the total file count across all directories.
 
 ### `ListFiles(ctx context.Context, mediaType models.MediaType, path string, start, count int) ([]models.MediaFile, error)`
+
 Returns a paginated slice of files starting at index `start` up to `count` items. Each `models.MediaFile` contains:
+
 - `Name`: File name (e.g. `SIYI_0001.JPG`)
 - `URL`: Direct HTTP download URL (e.g. `http://192.168.144.25:82/photo/20260315/SIYI_0001.JPG`)
 
 ### `ListAllFiles(ctx context.Context, mediaType models.MediaType, path string, pageSize ...int) ([]models.MediaFile, error)`
+
 Convenience method that queries the media count and automatically paginates until all files in `path` are retrieved.

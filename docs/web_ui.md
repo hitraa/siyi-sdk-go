@@ -42,32 +42,32 @@ Open your browser at `http://localhost:8080`.
 
 ## 3. Command Line Flags
 
-| Flag | Default | Description |
-|---|---|---|
-| `-ip` | `192.168.144.25` | Target gimbal camera IP address |
-| `-port` | `8080` | Local HTTP web server port |
-| `-udp-port` | `37260` | Camera UDP command port |
-| `-rtsp-port` | `8554` | Camera RTSP video port |
-| `-media-port` | `82` | Camera TF card HTTP media port |
-| `-gen` | `new` | Camera generation: `new` (ZT30/ZT6) or `old` (ZR30/ZR10/A8/A2) |
+| Flag          | Default          | Description                                                    |
+| ------------- | ---------------- | -------------------------------------------------------------- |
+| `-ip`         | `192.168.144.25` | Target gimbal camera IP address                                |
+| `-port`       | `8080`           | Local HTTP web server port                                     |
+| `-udp-port`   | `37260`          | Camera UDP command port                                        |
+| `-rtsp-port`  | `8554`           | Camera RTSP video port                                         |
+| `-media-port` | `82`             | Camera TF card HTTP media port                                 |
+| `-gen`        | `new`            | Camera generation: `new` (ZT30/ZT6) or `old` (ZR30/ZR10/A8/A2) |
 
 ---
 
 ## 4. REST & WebSocket Endpoints
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/` | `GET` | Main Web UI single-page dashboard |
-| `/ws` | `GET` | WebSocket connection for 10Hz attitude telemetry |
-| `/video_feed` | `GET` | MJPEG video stream proxy |
-| `/api/info` | `GET` | Camera and gimbal firmware versions, hardware ID |
-| `/api/attitude` | `GET` | Instantaneous gimbal Euler angles and rates |
-| `/api/rotate` | `POST` | Gimbal velocity control (`{"yaw": 20, "pitch": -10}`) |
-| `/api/center` | `POST` | Gimbal centering command |
-| `/api/capture` | `POST` | Photo capture (`{"action": "photo"}`) |
-| `/api/record` | `POST` | Video recording start/stop toggle |
-| `/api/zoom` | `POST` | Zoom control (`{"action": "in"\|"out"\|"stop"\|"set", "value": 2.5}`) |
-| `/api/focus` | `POST` | Focus control (`{"action": "far"\|"near"\|"auto", "x": 960, "y": 540}`) |
-| `/api/media/directories` | `GET` | List media directories on TF card |
-| `/api/media/files` | `GET` | List files within directory (`?path=photo/20260315`) |
-| `/api/media/download` | `GET` | Proxy download for TF card files |
+| Endpoint                 | Method | Description                                                             |
+| ------------------------ | ------ | ----------------------------------------------------------------------- |
+| `/`                      | `GET`  | Main Web UI single-page dashboard                                       |
+| `/ws`                    | `GET`  | WebSocket connection for 10Hz attitude telemetry                        |
+| `/video_feed`            | `GET`  | MJPEG video stream proxy                                                |
+| `/api/info`              | `GET`  | Camera and gimbal firmware versions, hardware ID                        |
+| `/api/attitude`          | `GET`  | Instantaneous gimbal Euler angles and rates                             |
+| `/api/rotate`            | `POST` | Gimbal velocity control (`{"yaw": 20, "pitch": -10}`)                   |
+| `/api/center`            | `POST` | Gimbal centering command                                                |
+| `/api/capture`           | `POST` | Photo capture (`{"action": "photo"}`)                                   |
+| `/api/record`            | `POST` | Video recording start/stop toggle                                       |
+| `/api/zoom`              | `POST` | Zoom control (`{"action": "in"\|"out"\|"stop"\|"set", "value": 2.5}`)   |
+| `/api/focus`             | `POST` | Focus control (`{"action": "far"\|"near"\|"auto", "x": 960, "y": 540}`) |
+| `/api/media/directories` | `GET`  | List media directories on TF card                                       |
+| `/api/media/files`       | `GET`  | List files within directory (`?path=photo/20260315`)                    |
+| `/api/media/download`    | `GET`  | Proxy download for TF card files                                        |
