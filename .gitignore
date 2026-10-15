@@ -1,0 +1,14 @@
+# Python reference directory (do not modify or track)
+siyi_sdk/
+
+# Go build artifacts
+bin/
+*.exe
+*.test
+*.out
+coverage.html
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
