@@ -104,7 +104,9 @@ func (s *Stream) connectAndStream(ctx context.Context) error {
 		return fmt.Errorf("invalid RTSP URL: %w", err)
 	}
 
+	transport := gortsplib.TransportTCP
 	c := &gortsplib.Client{
+		Transport: &transport,
 		DialContext: func(dialCtx context.Context, network, address string) (net.Conn, error) {
 			var d net.Dialer
 			return d.DialContext(ctx, network, address)
