@@ -19,22 +19,33 @@ func EncodeFirmwareVersion() []byte {
 	return nil
 }
 
-// DecodeFirmwareVersion parses the 12-byte response for command 0x01.
+// DecodeFirmwareVersion parses the 8-byte (camera + gimbal) or 12-byte (camera + gimbal + zoom) response for command 0x01.
+// Cameras without optical zoom (e.g. A8 Mini) return 8 bytes; Zoom is 0 in that case.
 func DecodeFirmwareVersion(payload []byte) (models.FirmwareVersion, error) {
-	if len(payload) != 12 {
+	switch len(payload) {
+	case 8:
+		camera := binary.LittleEndian.Uint32(payload[0:4])
+		gimbal := binary.LittleEndian.Uint32(payload[4:8])
+		return models.FirmwareVersion{
+			Camera: camera,
+			Gimbal: gimbal,
+			Zoom:   0,
+		}, nil
+	case 12:
+		camera := binary.LittleEndian.Uint32(payload[0:4])
+		gimbal := binary.LittleEndian.Uint32(payload[4:8])
+		zoom := binary.LittleEndian.Uint32(payload[8:12])
+		return models.FirmwareVersion{
+			Camera: camera,
+			Gimbal: gimbal,
+			Zoom:   zoom,
+		}, nil
+	default:
 		return models.FirmwareVersion{}, &protocol.MalformedPayloadError{
 			CmdID:  protocol.CmdRequestFirmwareVersion,
-			Reason: fmt.Sprintf("expected 12 bytes, got %d", len(payload)),
+			Reason: fmt.Sprintf("expected 8 or 12 bytes, got %d", len(payload)),
 		}
 	}
-	camera := binary.LittleEndian.Uint32(payload[0:4])
-	gimbal := binary.LittleEndian.Uint32(payload[4:8])
-	zoom := binary.LittleEndian.Uint32(payload[8:12])
-	return models.FirmwareVersion{
-		Camera: camera,
-		Gimbal: gimbal,
-		Zoom:   zoom,
-	}, nil
 }
 
 // EncodeHardwareID creates payload to request hardware ID (0x02).
@@ -114,30 +125,28 @@ func DecodeSystemTime(payload []byte) (models.SystemTime, error) {
 	}, nil
 }
 
-// EncodeSoftReboot creates a 1-byte bitmask for soft reboot (0x80).
-// Bit 7: camera reboot, Bit 6: gimbal reboot.
+// EncodeSoftReboot creates a 2-byte payload for soft reboot (0x80).
+// Byte 0: camera reboot (0/1), Byte 1: gimbal reboot (0/1).
 func EncodeSoftReboot(camera, gimbal bool) []byte {
-	var mask byte
+	var camByte, gimByte byte
 	if camera {
-		mask |= (1 << 7)
+		camByte = 1
 	}
 	if gimbal {
-		mask |= (1 << 6)
+		gimByte = 1
 	}
-	return []byte{mask}
+	return []byte{camByte, gimByte}
 }
 
-// DecodeSoftRebootAck parses the 1-byte response for command 0x80.
+// DecodeSoftRebootAck parses the 2-byte response for command 0x80.
 func DecodeSoftRebootAck(payload []byte) (cameraOK, gimbalOK bool, err error) {
-	if len(payload) != 1 {
+	if len(payload) != 2 {
 		return false, false, &protocol.MalformedPayloadError{
 			CmdID:  protocol.CmdSoftReboot,
-			Reason: fmt.Sprintf("expected 1 byte, got %d", len(payload)),
+			Reason: fmt.Sprintf("expected 2 bytes, got %d", len(payload)),
 		}
 	}
-	cam := ((payload[0] >> 7) & 1) != 0
-	gim := ((payload[0] >> 6) & 1) != 0
-	return cam, gim, nil
+	return payload[0] != 0, payload[1] != 0, nil
 }
 
 // EncodeGetIP creates payload to query network configuration (0x81).

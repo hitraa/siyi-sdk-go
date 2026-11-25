@@ -47,12 +47,12 @@ func EncodeLocalTemp(startX, startY, endX, endY uint16, flag models.TempMeasureF
 	return buf
 }
 
-// DecodeLocalTemp parses 24-byte response for command 0x13.
+// DecodeLocalTemp parses 20-byte response for command 0x13.
 func DecodeLocalTemp(payload []byte) (models.TempRegion, error) {
-	if len(payload) != 24 {
+	if len(payload) != 20 {
 		return models.TempRegion{}, &protocol.MalformedPayloadError{
 			CmdID:  protocol.CmdLocalTempMeasurement,
-			Reason: fmt.Sprintf("expected 24 bytes, got %d", len(payload)),
+			Reason: fmt.Sprintf("expected 20 bytes, got %d", len(payload)),
 		}
 	}
 	startX := binary.LittleEndian.Uint16(payload[0:2])

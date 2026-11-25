@@ -14,7 +14,7 @@ func TestSystemCommands(t *testing.T) {
 		t.Errorf("EncodeHeartbeat len = %d", len(hb))
 	}
 
-	// Firmware Version
+	// Firmware Version (12-byte with zoom)
 	fwPayload := []byte{
 		0x03, 0x02, 0x03, 0x06, // camera
 		0x04, 0x03, 0x02, 0x01, // gimbal
@@ -26,6 +26,15 @@ func TestSystemCommands(t *testing.T) {
 	}
 	if fw.Camera != 0x06030203 || fw.Gimbal != 0x01020304 || fw.Zoom != 0x05060708 {
 		t.Errorf("unexpected FW: %+v", fw)
+	}
+
+	// Firmware Version (8-byte without zoom, e.g. A8 Mini)
+	fw8, err := commands.DecodeFirmwareVersion(fwPayload[:8])
+	if err != nil {
+		t.Fatalf("DecodeFirmwareVersion(8) error: %v", err)
+	}
+	if fw8.Camera != 0x06030203 || fw8.Gimbal != 0x01020304 || fw8.Zoom != 0 {
+		t.Errorf("unexpected 8-byte FW: %+v", fw8)
 	}
 
 	// Hardware ID
@@ -50,10 +59,10 @@ func TestSystemCommands(t *testing.T) {
 
 	// Soft Reboot
 	rebootPayload := commands.EncodeSoftReboot(true, false)
-	if rebootPayload[0] != 0x80 {
-		t.Errorf("EncodeSoftReboot = 0x%02X, want 0x80", rebootPayload[0])
+	if len(rebootPayload) != 2 || rebootPayload[0] != 1 || rebootPayload[1] != 0 {
+		t.Errorf("EncodeSoftReboot = %v, want [1 0]", rebootPayload)
 	}
-	cam, gim, err := commands.DecodeSoftRebootAck([]byte{0x80})
+	cam, gim, err := commands.DecodeSoftRebootAck([]byte{1, 0})
 	if err != nil || !cam || gim {
 		t.Errorf("DecodeSoftRebootAck = (%v,%v), want (true,false)", cam, gim)
 	}
