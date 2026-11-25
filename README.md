@@ -345,29 +345,35 @@ A full-featured CLI binary is provided for automation, scripting, and shell inte
 # Build the CLI
 make build
 
-# Inspect connected camera hardware and firmware
+# Inspect connected camera hardware, firmware, mode, and mounting
 ./bin/siyi-cli -ip 192.168.144.25 -cmd info
 
-# Query current gimbal attitude
+# Query or set gimbal attitude / mode / centering
 ./bin/siyi-cli -ip 192.168.144.25 -cmd attitude
-
-# Rotate gimbal (yaw 20 deg/s, pitch -10 deg/s for 1.5 seconds)
-./bin/siyi-cli -ip 192.168.144.25 -cmd rotate -yaw 20 -pitch -10 -duration 1500ms
-
-# Recenter gimbal
+./bin/siyi-cli -ip 192.168.144.25 -cmd set-attitude -yaw-deg 30 -pitch-deg -15
+./bin/siyi-cli -ip 192.168.144.25 -cmd mode -mode follow
+./bin/siyi-cli -ip 192.168.144.25 -cmd rotate -yaw 20 -pitch -10
 ./bin/siyi-cli -ip 192.168.144.25 -cmd center
 
-# Capture a photo
+# Camera capture, zoom, focus, and encoding settings
 ./bin/siyi-cli -ip 192.168.144.25 -cmd photo
-
-# Toggle video recording
 ./bin/siyi-cli -ip 192.168.144.25 -cmd record
+./bin/siyi-cli -ip 192.168.144.25 -cmd zoom -dir 1
+./bin/siyi-cli -ip 192.168.144.25 -cmd encoding -stream 1
+./bin/siyi-cli -ip 192.168.144.25 -cmd encoding -set -stream 1 -enc h264 -width 1920 -height 1080 -bitrate 4000
 
-# Perform optical zoom in
-./bin/siyi-cli -ip 192.168.144.25 -cmd zoom -step 1
+# Camera & system configuration
+./bin/siyi-cli -ip 192.168.144.25 -cmd pic-name
+./bin/siyi-cli -ip 192.168.144.25 -cmd osd -set -on true
+./bin/siyi-cli -ip 192.168.144.25 -cmd ip-config
+./bin/siyi-cli -ip 192.168.144.25 -cmd sync-time
+./bin/siyi-cli -ip 192.168.144.25 -cmd weak-control
 
-# List media files on TF card
-./bin/siyi-cli -ip 192.168.144.25 -cmd media
+# Multi-sensor payload commands (ZT30 / ZT6 / ZR30)
+./bin/siyi-cli -ip 192.168.144.25 -cmd laser
+./bin/siyi-cli -ip 192.168.144.25 -cmd thermal
+./bin/siyi-cli -ip 192.168.144.25 -cmd ai
+./bin/siyi-cli -ip 192.168.144.25 -cmd stitching
 ```
 
 ---
