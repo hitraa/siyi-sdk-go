@@ -322,7 +322,8 @@ class SIYIApp {
         if (s.encoding_main) {
             document.getElementById('info-resolution').innerText =
                 `${s.encoding_main.resolution_w}x${s.encoding_main.resolution_h} @ ${s.encoding_main.frame_rate}fps`;
-            document.getElementById('info-bitrate').innerText = `${s.encoding_main.bitrate_kbps} kbps`;
+            document.getElementById('info-bitrate').innerText =
+                `${s.encoding_main.bitrate_kbps} kbps`;
         }
         if (s.encoding_recording) {
             document.getElementById('info-rec-resolution').innerText =
@@ -336,7 +337,8 @@ class SIYIApp {
         }
         if (s.system_time?.unix_usec) {
             const d = new Date(s.system_time.unix_usec / 1000);
-            document.getElementById('set-sys-time-display').innerText = `System Time: ${d.toISOString()}`;
+            document.getElementById('set-sys-time-display').innerText =
+                `System Time: ${d.toISOString()}`;
         }
         if (s.pic_name_photo != null) {
             document.getElementById('set-picname-photo').value = String(s.pic_name_photo);
@@ -463,7 +465,10 @@ class SIYIApp {
         zone.onmousedown = startMove;
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', endMove);
-        zone.ontouchstart = (e) => { e.preventDefault(); startMove(e); };
+        zone.ontouchstart = (e) => {
+            e.preventDefault();
+            startMove(e);
+        };
         window.addEventListener('touchmove', handleMove);
         window.addEventListener('touchend', endMove);
     }
@@ -494,13 +499,15 @@ class SIYIApp {
         const grid = document.getElementById('media-grid');
         const badge = document.getElementById('media-count-badge');
         if (badge) badge.innerText = '';
-        grid.innerHTML = '<div class="media-card"><div class="media-thumb"><i class="fas fa-spinner fa-spin"></i></div></div>';
+        grid.innerHTML =
+            '<div class="media-card"><div class="media-thumb"><i class="fas fa-spinner fa-spin"></i></div></div>';
         document.getElementById('media-path-breadcrumb').innerText =
             this.currentMediaMode === 0 ? '/root/photo' : '/root/video';
 
         const dirs = await this.get('/api/media/directories', { type: this.currentMediaMode });
         if (!dirs || dirs.length === 0) {
-            grid.innerHTML = '<div class="overlay-card" style="grid-column: 1/-1; text-align: center;">No media found</div>';
+            grid.innerHTML =
+                '<div class="overlay-card" style="grid-column: 1/-1; text-align: center;">No media found</div>';
             return;
         }
         grid.innerHTML = '';
@@ -520,7 +527,8 @@ class SIYIApp {
         this.currentPath = path;
         document.getElementById('media-path-breadcrumb').innerText = path;
         const grid = document.getElementById('media-grid');
-        grid.innerHTML = '<div class="media-card"><div class="media-thumb"><i class="fas fa-spinner fa-spin"></i></div></div>';
+        grid.innerHTML =
+            '<div class="media-card"><div class="media-thumb"><i class="fas fa-spinner fa-spin"></i></div></div>';
 
         const files = await this.get('/api/media/files', { path, type: this.currentMediaMode });
         grid.innerHTML = '';
@@ -538,12 +546,13 @@ class SIYIApp {
         if (badge) badge.innerText = files ? `${files.length} items` : '0 items';
         if (!files) return;
 
-        for (const file of files) {
+        for (const file of files.toReversed()) {
             const el = document.createElement('div');
             el.className = 'media-card';
-            const thumb = this.currentMediaMode === 0
-                ? `<img src="/api/media/download?url=${encodeURIComponent(file.url)}" loading="lazy" alt="${file.name}" />`
-                : `<i class="fas fa-file-video fa-2x"></i>`;
+            const thumb =
+                this.currentMediaMode === 0
+                    ? `<img src="${file.url}" loading="lazy" alt="${file.name}" />`
+                    : `<i class="fas fa-file-video fa-2x"></i>`;
             el.innerHTML = `
                 <div class="media-thumb">${thumb}</div>
                 <div class="media-info">
@@ -558,12 +567,20 @@ class SIYIApp {
     async formatSD() {
         if (!confirm('Format SD card? All photos and videos will be permanently deleted!')) return;
         const res = await this.post('/api/storage/format');
-        this.toast(res?.status === 'ok' ? 'SD Card formatted' : 'Format failed', res?.status === 'ok' ? 'success' : 'error');
+        this.toast(
+            res?.status === 'ok' ? 'SD Card formatted' : 'Format failed',
+            res?.status === 'ok' ? 'success' : 'error',
+        );
         this.loadMedia();
     }
 
     async reboot(camera, gimbal) {
-        if (!confirm(`Reboot ${camera ? 'Camera' : ''}${camera && gimbal ? ' & ' : ''}${gimbal ? 'Gimbal' : ''}?`)) return;
+        if (
+            !confirm(
+                `Reboot ${camera ? 'Camera' : ''}${camera && gimbal ? ' & ' : ''}${gimbal ? 'Gimbal' : ''}?`,
+            )
+        )
+            return;
         await this.post('/api/system/reboot', { camera, gimbal });
         this.toast('Reboot command sent');
     }
