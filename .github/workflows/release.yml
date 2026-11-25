@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v7
@@ -22,23 +24,51 @@ jobs:
           go-version: stable
           cache: true
 
-      - name: Verify version and changelog
+      - name: Verify version and generate changelog
         shell: bash
         run: |
           version="$(grep -E '^(const|var) Version =' version.go | cut -d'"' -f2)"
           test -n "$version"
           test "$GITHUB_REF_NAME" = "v$version"
-          grep -Fq "## [v$version]" CHANGELOG.md
 
-      - name: Extract release notes
-        shell: bash
-        run: |
-          version="$(grep -E '^(const|var) Version =' version.go | cut -d'"' -f2)"
-          awk -v ver="## [v$version]" '
-            index($0, ver) { flag = 1; next }
-            flag && /^## / { flag = 0; exit }
-            flag { print }
-          ' CHANGELOG.md > RELEASE_NOTES.md
+          if grep -Fq "## [v$version]" CHANGELOG.md; then
+            awk -v ver="## [v$version]" '
+              index($0, ver) { flag = 1; next }
+              flag && /^## / { flag = 0; exit }
+              flag { print }
+            ' CHANGELOG.md > RELEASE_NOTES.md
+          else
+            prev_tag="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+            range="${prev_tag:+${prev_tag}..}${GITHUB_REF_NAME}"
+            release_date="$(date -u +%Y-%m-%d)"
+
+            {
+              echo "### ✨ Changes"
+              echo ""
+              git log "$range" --no-merges --pretty=format:"- %s (%h)"
+              echo ""
+            } > RELEASE_NOTES.md
+
+            python3 - "$version" "$release_date" <<'PY'
+          import sys
+          version, release_date = sys.argv[1], sys.argv[2]
+          notes = open("RELEASE_NOTES.md").read().strip()
+          changelog = open("CHANGELOG.md").read()
+          entry = f"---\n\n## [v{version}] - {release_date}\n\n{notes}\n\n"
+          if "\n---\n" in changelog:
+              head, tail = changelog.split("\n---\n", 1)
+              updated = head + "\n" + entry + "---" + tail.lstrip("\n")
+          else:
+              updated = changelog + "\n" + entry
+          open("CHANGELOG.md", "w").write(updated)
+          PY
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG.md
+            git commit -m "docs(changelog): update for v$version [skip ci]"
+            git push origin HEAD:main || true
+          fi
 
       - name: Run vet & tests
         run: |
