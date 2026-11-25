@@ -7,6 +7,7 @@ Thank you for your interest in contributing to `siyi-sdk-go`! We welcome contrib
 ## Reporting Issues
 
 When reporting an issue, please include:
+
 1. **Camera Model**: (e.g., UniPod MT11, ZT30, ZT6, A8 mini, ZR30, ZR10, A2 mini, R1M).
 2. **Firmware Version**: (queried via `client.GetFirmwareVersion()` or `siyi-cli -cmd info`).
 3. **Transport Used**: (UDP, TCP, or UART Serial, plus baud rate/ports).
@@ -73,6 +74,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/) for all comm
 `siyi-sdk-go` adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release tags use the `vMAJOR.MINOR.PATCH` format.
 
 To propose a release:
+
 1. Update `const Version` in `version.go`.
 2. Add a new `## [vX.Y.Z] - YYYY-MM-DD` section with release notes to `CHANGELOG.md`.
 3. Open a pull request against `main`.
