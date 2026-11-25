@@ -173,32 +173,32 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 	case "attitude":
 		att, err := client.GetGimbalAttitude(ctx)
 		if err != nil {
-			return fmt.Errorf("GetGimbalAttitude failed: %w", err)
+			return fmt.Errorf("getGimbalAttitude failed: %w", err)
 		}
 		fmt.Printf("Gimbal Attitude:\n  Yaw:   %.1f° (Rate: %.1f°/s)\n  Pitch: %.1f° (Rate: %.1f°/s)\n  Roll:  %.1f° (Rate: %.1f°/s)\n",
 			att.YawDeg, att.YawRateDPS, att.PitchDeg, att.PitchRateDPS, att.RollDeg, att.RollRateDPS)
 	case "set-attitude":
 		ack, err := client.SetGimbalAttitude(ctx, o.yawDeg, o.pitchDeg)
 		if err != nil {
-			return fmt.Errorf("SetGimbalAttitude failed: %w", err)
+			return fmt.Errorf("setGimbalAttitude failed: %w", err)
 		}
 		fmt.Printf("Target attitude set (yaw=%.1f°, pitch=%.1f°). Current: yaw=%.1f°, pitch=%.1f°, roll=%.1f°\n",
 			o.yawDeg, o.pitchDeg, ack.YawDeg, ack.PitchDeg, ack.RollDeg)
 	case "single-axis":
 		ack, err := client.SetSingleAxis(ctx, o.yawDeg, o.axis)
 		if err != nil {
-			return fmt.Errorf("SetSingleAxis failed: %w", err)
+			return fmt.Errorf("setSingleAxis failed: %w", err)
 		}
 		fmt.Printf("Single-axis angle set (axis=%d, angle=%.1f°). Current: yaw=%.1f°, pitch=%.1f°, roll=%.1f°\n",
 			o.axis, o.yawDeg, ack.YawDeg, ack.PitchDeg, ack.RollDeg)
 	case "center":
 		if err := client.OneKeyCentering(ctx, models.CenteringAction(o.centerAction)); err != nil {
-			return fmt.Errorf("Centering failed: %w", err)
+			return fmt.Errorf("centering failed: %w", err)
 		}
 		fmt.Printf("Gimbal centering action %s succeeded.\n", models.CenteringAction(o.centerAction))
 	case "rotate":
 		if err := client.Rotate(ctx, o.yaw, o.pitch); err != nil {
-			return fmt.Errorf("Rotate failed: %w", err)
+			return fmt.Errorf("rotate failed: %w", err)
 		}
 		fmt.Printf("Rotate command dispatched (yaw: %d, pitch: %d).\n", o.yaw, o.pitch)
 	case "mode":
@@ -207,36 +207,36 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 		return cmdCapture(ctx, client, o.captureFunc)
 	case "photo":
 		if err := client.TakePhoto(ctx); err != nil {
-			return fmt.Errorf("Photo capture failed: %w", err)
+			return fmt.Errorf("photo capture failed: %w", err)
 		}
 		fmt.Println("Photo capture command dispatched.")
 	case "record":
 		if err := client.StartRecording(ctx); err != nil {
-			return fmt.Errorf("Record start/stop failed: %w", err)
+			return fmt.Errorf("record start/stop failed: %w", err)
 		}
 		fmt.Println("Record toggle command dispatched.")
 	case "zoom":
 		if o.zoomVal > 1.0 {
 			if err := client.AbsoluteZoom(ctx, o.zoomVal); err != nil {
-				return fmt.Errorf("Absolute zoom to %.1fx failed: %w", o.zoomVal, err)
+				return fmt.Errorf("absolute zoom to %.1fx failed: %w", o.zoomVal, err)
 			}
 			fmt.Printf("Absolute zoom set to %.1fx.\n", o.zoomVal)
 		} else {
 			mag, err := client.ManualZoom(ctx, o.dir)
 			if err != nil {
-				return fmt.Errorf("Manual zoom failed: %w", err)
+				return fmt.Errorf("manual zoom failed: %w", err)
 			}
 			fmt.Printf("Manual zoom dispatched (dir: %d). Current zoom: %.1fx.\n", o.dir, mag)
 		}
 	case "focus":
 		if o.touchX > 0 && o.touchY > 0 {
 			if err := client.AutoFocus(ctx, 1, uint16(o.touchX), uint16(o.touchY)); err != nil {
-				return fmt.Errorf("Auto focus failed: %w", err)
+				return fmt.Errorf("auto focus failed: %w", err)
 			}
 			fmt.Printf("Auto focus triggered at (%d, %d).\n", o.touchX, o.touchY)
 		} else {
 			if err := client.ManualFocus(ctx, o.dir); err != nil {
-				return fmt.Errorf("Manual focus failed: %w", err)
+				return fmt.Errorf("manual focus failed: %w", err)
 			}
 			fmt.Printf("Manual focus dispatched (dir: %d).\n", o.dir)
 		}
@@ -253,14 +253,14 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 	case "sys-time":
 		st, err := client.GetSystemTime(ctx)
 		if err != nil {
-			return fmt.Errorf("GetSystemTime failed: %w", err)
+			return fmt.Errorf("getSystemTime failed: %w", err)
 		}
 		fmt.Printf("System Time: unix_usec=%d (%s), boot_ms=%d\n",
 			st.UnixUsec, time.UnixMicro(int64(st.UnixUsec)).UTC().Format(time.RFC3339), st.BootMS)
 	case "sync-time":
 		ok, err := client.SetUTCTime(ctx, uint64(time.Now().UTC().UnixMicro()))
 		if err != nil {
-			return fmt.Errorf("SetUTCTime failed: %w", err)
+			return fmt.Errorf("setUTCTime failed: %w", err)
 		}
 		fmt.Printf("UTC time synchronized: %v\n", ok)
 	case "weak-control":
@@ -268,7 +268,7 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 	case "laser":
 		ld, err := client.GetLaserDistance(ctx)
 		if err != nil {
-			return fmt.Errorf("GetLaserDistance failed: %v", err)
+			return fmt.Errorf("getLaserDistance failed: %v", err)
 		}
 		if ld.DistanceM != nil {
 			fmt.Printf("Laser Distance: %.1f m\n", *ld.DistanceM)
@@ -281,7 +281,7 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 	case "laser-state":
 		ok, err := client.SetLaserRangingState(ctx, o.on)
 		if err != nil {
-			return fmt.Errorf("SetLaserRangingState failed: %w", err)
+			return fmt.Errorf("setLaserRangingState failed: %w", err)
 		}
 		fmt.Printf("Laser ranging set to %v (ack=%v)\n", o.on, ok)
 	case "ai":
@@ -291,7 +291,7 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 	case "format":
 		ok, err := client.FormatSDCard(ctx)
 		if err != nil {
-			return fmt.Errorf("Format SD Card failed: %w", err)
+			return fmt.Errorf("format SD Card failed: %w", err)
 		}
 		fmt.Printf("Format SD card acknowledged: %v\n", ok)
 	case "reboot":
@@ -299,11 +299,11 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 		rebootGim := o.rebootTarget == "gimbal" || o.rebootTarget == "both"
 		camOK, gimOK, err := client.SoftReboot(ctx, rebootCam, rebootGim)
 		if err != nil {
-			return fmt.Errorf("Soft reboot failed: %w", err)
+			return fmt.Errorf("soft reboot failed: %w", err)
 		}
 		fmt.Printf("Soft reboot dispatched: Camera OK=%v, Gimbal OK=%v\n", camOK, gimOK)
 	default:
-		return fmt.Errorf("Unknown command: %s", o.cmd)
+		return fmt.Errorf("unknown command: %s", o.cmd)
 	}
 	return nil
 }
@@ -311,11 +311,11 @@ func dispatchCommand(ctx context.Context, client *siyi.Client, o cliOpts) error 
 func cmdInfo(ctx context.Context, client *siyi.Client) error {
 	fw, err := client.GetFirmwareVersion(ctx)
 	if err != nil {
-		return fmt.Errorf("GetFirmwareVersion failed: %w", err)
+		return fmt.Errorf("getFirmwareVersion failed: %w", err)
 	}
 	hw, err := client.GetHardwareID(ctx)
 	if err != nil {
-		return fmt.Errorf("GetHardwareID failed: %w", err)
+		return fmt.Errorf("getHardwareID failed: %w", err)
 	}
 	pid, _ := hw.ProductID()
 	fmt.Printf("Connected to SIYI %s\n", pid.String())
@@ -336,7 +336,7 @@ func cmdMode(ctx context.Context, client *siyi.Client, mode string) error {
 	if mode == "" {
 		m, err := client.GetGimbalMode(ctx)
 		if err != nil {
-			return fmt.Errorf("GetGimbalMode failed: %w", err)
+			return fmt.Errorf("getGimbalMode failed: %w", err)
 		}
 		fmt.Printf("Gimbal Mode: %s (%d)\n", m.String(), m)
 		return nil
@@ -353,7 +353,7 @@ func cmdMode(ctx context.Context, client *siyi.Client, mode string) error {
 		return fmt.Errorf("unknown mode %q (expected lock, follow, or fpv)", mode)
 	}
 	if err := client.Capture(ctx, fn); err != nil {
-		return fmt.Errorf("Set gimbal mode failed: %w", err)
+		return fmt.Errorf("set gimbal mode failed: %w", err)
 	}
 	fmt.Printf("Gimbal mode set to %s.\n", mode)
 	return nil
@@ -378,7 +378,7 @@ func cmdCapture(ctx context.Context, client *siyi.Client, action string) error {
 		return fmt.Errorf("unknown capture action %q", action)
 	}
 	if err := client.Capture(ctx, fn); err != nil {
-		return fmt.Errorf("Capture(%s) failed: %w", action, err)
+		return fmt.Errorf("capture(%s) failed: %w", action, err)
 	}
 	fmt.Printf("Capture action %q dispatched.\n", action)
 	return nil
@@ -389,7 +389,7 @@ func cmdEncoding(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if !o.set {
 		enc, err := client.GetEncodingParams(ctx, st)
 		if err != nil {
-			return fmt.Errorf("GetEncodingParams failed: %w", err)
+			return fmt.Errorf("getEncodingParams failed: %w", err)
 		}
 		fmt.Printf("Encoding (%s): Codec=%d Resolution=%dx%d Bitrate=%d kbps FPS=%d\n",
 			enc.StreamType.String(), enc.EncType, enc.ResolutionW, enc.ResolutionH, enc.BitrateKbps, enc.FrameRateFPS)
@@ -407,7 +407,7 @@ func cmdEncoding(ctx context.Context, client *siyi.Client, o cliOpts) error {
 		BitrateKbps: uint16(o.bitrate),
 	})
 	if err != nil {
-		return fmt.Errorf("SetEncodingParams failed: %w", err)
+		return fmt.Errorf("setEncodingParams failed: %w", err)
 	}
 	fmt.Printf("SetEncodingParams acknowledged: %v\n", ok)
 	return nil
@@ -424,7 +424,7 @@ func cmdPicName(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if !o.set {
 		nt, err := client.GetPicNameType(ctx, ft)
 		if err != nil {
-			return fmt.Errorf("GetPicNameType failed: %w", err)
+			return fmt.Errorf("getPicNameType failed: %w", err)
 		}
 		fmt.Printf("File Name Type (%s): %d (1=Index, 2=Timestamp)\n", o.fileType, nt)
 		return nil
@@ -434,7 +434,7 @@ func cmdPicName(ctx context.Context, client *siyi.Client, o cliOpts) error {
 		nt = models.FileNameTypeTimestamp
 	}
 	if err := client.SetPicNameType(ctx, ft, nt); err != nil {
-		return fmt.Errorf("SetPicNameType failed: %w", err)
+		return fmt.Errorf("setPicNameType failed: %w", err)
 	}
 	fmt.Printf("SetPicNameType (%s -> %s) succeeded.\n", o.fileType, o.nameType)
 	return nil
@@ -444,14 +444,14 @@ func cmdOSD(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if !o.set {
 		on, err := client.GetMavlinkOSDFlag(ctx)
 		if err != nil {
-			return fmt.Errorf("GetMavlinkOSDFlag failed: %w", err)
+			return fmt.Errorf("getMavlinkOSDFlag failed: %w", err)
 		}
 		fmt.Printf("MAVLink/HDMI OSD Enabled: %v\n", on)
 		return nil
 	}
 	ok, err := client.SetMavlinkOSDFlag(ctx, o.on)
 	if err != nil {
-		return fmt.Errorf("SetMavlinkOSDFlag failed: %w", err)
+		return fmt.Errorf("setMavlinkOSDFlag failed: %w", err)
 	}
 	fmt.Printf("SetMavlinkOSDFlag(%v) acknowledged: %v\n", o.on, ok)
 	return nil
@@ -461,14 +461,14 @@ func cmdStitching(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if o.stitchMode < 0 {
 		m, err := client.GetVideoStitchingMode(ctx)
 		if err != nil {
-			return fmt.Errorf("GetVideoStitchingMode failed: %w", err)
+			return fmt.Errorf("getVideoStitchingMode failed: %w", err)
 		}
 		fmt.Printf("Video Stitching Mode: %d\n", m)
 		return nil
 	}
 	m, err := client.SetVideoStitchingMode(ctx, models.VideoStitchingMode(o.stitchMode))
 	if err != nil {
-		return fmt.Errorf("SetVideoStitchingMode failed: %w", err)
+		return fmt.Errorf("setVideoStitchingMode failed: %w", err)
 	}
 	fmt.Printf("Video Stitching Mode set to: %d\n", m)
 	return nil
@@ -478,7 +478,7 @@ func cmdIPConfig(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if !o.set {
 		cfg, err := client.GetIP(ctx)
 		if err != nil {
-			return fmt.Errorf("GetIP failed: %w", err)
+			return fmt.Errorf("getIP failed: %w", err)
 		}
 		fmt.Printf("IP Config: IP=%s Mask=%s Gateway=%s\n", cfg.IP, cfg.Mask, cfg.Gateway)
 		return nil
@@ -492,7 +492,7 @@ func cmdIPConfig(ctx context.Context, client *siyi.Client, o cliOpts) error {
 		Gateway: net.ParseIP(o.gateway),
 	})
 	if err != nil {
-		return fmt.Errorf("SetIP failed: %w", err)
+		return fmt.Errorf("setIP failed: %w", err)
 	}
 	fmt.Printf("SetIP acknowledged: %v\n", ok)
 	return nil
@@ -502,7 +502,7 @@ func cmdWeakControl(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if o.set {
 		ok, err := client.SetWeakControlMode(ctx, o.on)
 		if err != nil {
-			return fmt.Errorf("SetWeakControlMode failed: %w", err)
+			return fmt.Errorf("setWeakControlMode failed: %w", err)
 		}
 		fmt.Printf("Weak Control Mode set to %v (ack=%v)\n", o.on, ok)
 	} else if on, err := client.GetWeakControlMode(ctx); err == nil {
@@ -514,7 +514,7 @@ func cmdWeakControl(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if o.weakThresh >= 0 {
 		ok, err := client.SetWeakThreshold(ctx, models.WeakControlThreshold{Limit: float64(o.weakThresh)})
 		if err != nil {
-			return fmt.Errorf("SetWeakThreshold failed: %w", err)
+			return fmt.Errorf("setWeakThreshold failed: %w", err)
 		}
 		fmt.Printf("Weak Threshold set to %d (ack=%v)\n", o.weakThresh, ok)
 	} else if t, err := client.GetWeakThreshold(ctx); err == nil {
@@ -534,14 +534,14 @@ func cmdAI(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if o.set {
 		ok, err := client.SetAIStreamOutput(ctx, o.on)
 		if err != nil {
-			return fmt.Errorf("SetAIStreamOutput failed: %w", err)
+			return fmt.Errorf("setAIStreamOutput failed: %w", err)
 		}
 		fmt.Printf("AI Stream Output set to %v (ack=%v)\n", o.on, ok)
 		return nil
 	}
 	mode, err := client.GetAIMode(ctx)
 	if err != nil {
-		return fmt.Errorf("GetAIMode failed: %w", err)
+		return fmt.Errorf("getAIMode failed: %w", err)
 	}
 	fmt.Printf("AI Mode Active: %v\n", mode)
 	if st, err := client.GetAIStreamStatus(ctx); err == nil {
@@ -553,14 +553,14 @@ func cmdAI(ctx context.Context, client *siyi.Client, o cliOpts) error {
 func cmdThermal(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	if o.shutter {
 		if err := client.ManualThermalShutter(ctx); err != nil {
-			return fmt.Errorf("ManualThermalShutter failed: %w", err)
+			return fmt.Errorf("manualThermalShutter failed: %w", err)
 		}
 		fmt.Println("Manual thermal shutter calibration triggered.")
 		return nil
 	}
 	if o.pseudoColor >= 0 {
 		if err := client.SetPseudoColor(ctx, models.PseudoColor(o.pseudoColor)); err != nil {
-			return fmt.Errorf("SetPseudoColor failed: %w", err)
+			return fmt.Errorf("setPseudoColor failed: %w", err)
 		}
 		fmt.Printf("Pseudo-color set to %d.\n", o.pseudoColor)
 	} else if pc, err := client.GetPseudoColor(ctx); err == nil {
@@ -568,7 +568,7 @@ func cmdThermal(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	}
 	if o.thermalMode >= 0 {
 		if err := client.SetThermalOutputMode(ctx, models.ThermalOutputMode(o.thermalMode)); err != nil {
-			return fmt.Errorf("SetThermalOutputMode failed: %w", err)
+			return fmt.Errorf("setThermalOutputMode failed: %w", err)
 		}
 		fmt.Printf("Thermal output mode set to %d.\n", o.thermalMode)
 	} else if tm, err := client.GetThermalOutputMode(ctx); err == nil {
@@ -576,7 +576,7 @@ func cmdThermal(ctx context.Context, client *siyi.Client, o cliOpts) error {
 	}
 	if o.thermalGain >= 0 {
 		if err := client.SetThermalGain(ctx, models.ThermalGain(o.thermalGain)); err != nil {
-			return fmt.Errorf("SetThermalGain failed: %w", err)
+			return fmt.Errorf("setThermalGain failed: %w", err)
 		}
 		fmt.Printf("Thermal gain set to %d.\n", o.thermalGain)
 	} else if tg, err := client.GetThermalGain(ctx); err == nil {
