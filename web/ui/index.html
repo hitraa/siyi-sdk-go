@@ -3,11 +3,11 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>SIYI SDK Web UI</title>
+        <title>SIYI Command — Gimbal & Camera Control</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/static/style.css" />
@@ -20,16 +20,26 @@
     <body>
         <div id="offline-overlay" class="offline-overlay">
             <div class="overlay-content">
-                <i
-                    class="fas fa-sync fa-spin fa-3x"
-                    style="color: var(--accent-color); margin-bottom: 20px"
-                ></i>
+                <i class="fas fa-sync fa-spin fa-3x" style="color: var(--accent-color); margin-bottom: 20px"></i>
                 <h2 id="overlay-title">CAMERA OFFLINE</h2>
                 <p id="overlay-msg">Waiting for connection to be restored...</p>
             </div>
         </div>
+
+        <div id="toast-container" class="toast-container"></div>
+
         <header>
-            <div class="logo">SIYI COMMAND</div>
+            <div class="header-left">
+                <div class="logo">SIYI COMMAND</div>
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" id="nav-dashboard-btn">
+                        <i class="fas fa-th-large"></i> Dashboard
+                    </button>
+                    <button class="nav-tab" id="nav-settings-btn">
+                        <i class="fas fa-sliders-h"></i> Settings
+                    </button>
+                </nav>
+            </div>
             <div class="status-bar">
                 <div class="status-item">
                     <span id="connection-indicator" class="indicator online"></span>
@@ -39,53 +49,26 @@
                     <i class="fas fa-microchip"></i>
                     <span id="camera-ip-display">192.168.144.25</span>
                 </div>
-                <div
-                    class="status-item"
-                    style="border-left: 1px solid var(--glass-border); padding-left: 15px"
-                >
-                    <input
-                        type="checkbox"
-                        id="config-live-view-toggle"
-                        checked
-                        style="width: auto; cursor: pointer"
-                    />
-                    <label for="config-live-view-toggle" style="font-size: 0.8rem; cursor: pointer"
-                        >Live View</label
-                    >
+                <div class="status-item divider-left">
+                    <input type="checkbox" id="config-live-view-toggle" checked style="width: auto; cursor: pointer" />
+                    <label for="config-live-view-toggle" style="font-size: 0.85rem; cursor: pointer">Live View</label>
                 </div>
-                <button
-                    class="btn"
-                    id="theme-toggle-btn"
-                    title="Toggle Theme"
-                    style="padding: 8px 12px"
-                >
+                <button class="btn btn-icon" id="theme-toggle-btn" title="Toggle Dark / Light Mode">
                     <i class="fas fa-moon"></i>
-                </button>
-                <button
-                    class="btn"
-                    id="open-config-btn"
-                    title="Configuration"
-                    style="padding: 8px 12px"
-                >
-                    <i class="fas fa-cog"></i>
                 </button>
             </div>
         </header>
 
-        <main>
+        <!-- DASHBOARD VIEW -->
+        <main id="dashboard-view">
             <div class="viewport-section">
                 <div class="video-container">
                     <img id="video-stream" src="/api/stream/video" alt="Video Stream" />
                     <div class="video-overlay">
                         <div class="overlay-card">
-                            Y: <span id="att-yaw">0.0</span>° | P: <span id="att-pitch">0.0</span>°
-                            | R: <span id="att-roll">0.0</span>°
+                            Y: <span id="att-yaw">0.0</span>° | P: <span id="att-pitch">0.0</span>° | R: <span id="att-roll">0.0</span>°
                         </div>
-                        <div
-                            id="recording-badge"
-                            class="overlay-card"
-                            style="display: none; color: var(--danger)"
-                        >
+                        <div id="recording-badge" class="overlay-card" style="display: none; color: var(--danger)">
                             <i class="fas fa-circle"></i> REC
                         </div>
                     </div>
@@ -93,35 +76,39 @@
 
                 <section class="media-section">
                     <div class="control-card">
-                        <div class="modal-header">
-                            <h3>Media Browser</h3>
-                            <div class="tabs">
-                                <button class="btn btn-sm active" id="media-tab-img">
-                                    <i class="fas fa-image"></i> Photos
-                                </button>
-                                <button class="btn btn-sm" id="media-tab-vid">
-                                    <i class="fas fa-film"></i> Videos
+                        <div class="media-header">
+                            <div class="media-title-row">
+                                <h3>Media Browser</h3>
+                                <span id="media-count-badge" class="badge"></span>
+                            </div>
+                            <div class="media-actions-row">
+                                <div class="tabs">
+                                    <button class="btn btn-sm active" id="media-tab-img">
+                                        <i class="fas fa-image"></i> Photos
+                                    </button>
+                                    <button class="btn btn-sm" id="media-tab-vid">
+                                        <i class="fas fa-film"></i> Videos
+                                    </button>
+                                </div>
+                                <a href="/api/media/download-all?type=0" class="btn btn-sm" title="Download All Photos (.zip)">
+                                    <i class="fas fa-file-archive"></i> Photos.zip
+                                </a>
+                                <a href="/api/media/download-all?type=1" class="btn btn-sm" title="Download All Videos (.zip)">
+                                    <i class="fas fa-file-archive"></i> Videos.zip
+                                </a>
+                                <a href="/api/media/download-all?type=all" class="btn btn-sm btn-primary" title="Download All Photos & Videos (.zip)">
+                                    <i class="fas fa-download"></i> All.zip
+                                </a>
+                                <button class="btn btn-sm" id="refresh-media-btn" title="Refresh Media">
+                                    <i class="fas fa-sync"></i>
                                 </button>
                             </div>
-                            <button class="btn" id="refresh-media-btn">
-                                <i class="fas fa-sync"></i>
-                            </button>
                         </div>
-                        <div
-                            id="media-path-breadcrumb"
-                            style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px"
-                        >
-                            /root/photo
-                        </div>
-                        <div class="media-grid" id="media-grid">
-                            <!-- Media items will be injected here -->
+                        <div id="media-path-breadcrumb" class="breadcrumb">/root/photo</div>
+                        <div class="media-grid scrollable-media" id="media-grid">
                             <div class="media-card">
-                                <div class="media-thumb">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </div>
-                                <div class="media-info">
-                                    <div class="media-name">Loading media...</div>
-                                </div>
+                                <div class="media-thumb"><i class="fas fa-spinner fa-spin"></i></div>
+                                <div class="media-info"><div class="media-name">Loading media...</div></div>
                             </div>
                         </div>
                     </div>
@@ -137,130 +124,326 @@
                         </div>
                     </div>
                     <div class="grid-controls">
-                        <button class="btn" id="center-btn">
-                            <i class="fas fa-compress-arrows-alt"></i> Center
-                        </button>
-                        <button class="btn" id="lock-btn"><i class="fas fa-lock"></i> Lock</button>
+                        <button class="btn btn-sm" id="center-btn"><i class="fas fa-compress-arrows-alt"></i> Center</button>
+                        <button class="btn btn-sm" id="downward-btn"><i class="fas fa-arrow-down"></i> Down</button>
+                        <button class="btn btn-sm" id="lock-btn"><i class="fas fa-lock"></i> Lock</button>
+                        <button class="btn btn-sm" id="follow-btn"><i class="fas fa-arrows-alt"></i> Follow</button>
+                        <button class="btn btn-sm" id="fpv-btn"><i class="fas fa-fighter-jet"></i> FPV</button>
                     </div>
+                    <div class="grid-controls" style="margin-top: 8px">
+                        <input type="number" id="att-yaw-input" placeholder="Yaw°" step="5" class="compact-input" />
+                        <input type="number" id="att-pitch-input" placeholder="Pitch°" step="5" class="compact-input" />
+                    </div>
+                    <button class="btn btn-sm" id="set-att-btn" style="width: 100%; margin-top: 6px">
+                        <i class="fas fa-crosshairs"></i> Set Attitude
+                    </button>
                 </div>
 
                 <div class="control-card">
                     <h3>Camera Actions</h3>
                     <div class="grid-controls">
-                        <button class="btn btn-primary" id="photo-btn">
-                            <i class="fas fa-camera"></i> Photo
-                        </button>
-                        <button class="btn" id="record-btn">
-                            <i class="fas fa-video"></i> Record
-                        </button>
-                        <button class="btn" id="zoom-in-btn">
-                            <i class="fas fa-search-plus"></i> Zoom +
-                        </button>
-                        <button class="btn" id="zoom-out-btn">
-                            <i class="fas fa-search-minus"></i> Zoom -
-                        </button>
-                        <button class="btn" id="focus-near-btn">
-                            <i class="fas fa-eye"></i> Focus Near
-                        </button>
-                        <button class="btn" id="focus-far-btn">
-                            <i class="fas fa-eye-slash"></i> Focus Far
-                        </button>
+                        <button class="btn btn-primary btn-sm" id="photo-btn"><i class="fas fa-camera"></i> Photo</button>
+                        <button class="btn btn-sm" id="record-btn"><i class="fas fa-video"></i> Record</button>
+                        <button class="btn btn-sm" id="zoom-in-btn"><i class="fas fa-search-plus"></i> Zoom +</button>
+                        <button class="btn btn-sm" id="zoom-out-btn"><i class="fas fa-search-minus"></i> Zoom -</button>
+                        <button class="btn btn-sm" id="focus-near-btn"><i class="fas fa-eye"></i> Focus -</button>
+                        <button class="btn btn-sm" id="focus-far-btn"><i class="fas fa-eye-slash"></i> Focus +</button>
+                    </div>
+                    <div class="inline-row" style="margin-top: 8px">
+                        <input type="number" id="abs-zoom-input" placeholder="Zoom (e.g. 2.0)" step="0.5" min="1" max="30" class="compact-input" />
+                        <button class="btn btn-sm" id="abs-zoom-btn">Set Zoom</button>
                     </div>
                 </div>
 
                 <div class="control-card">
                     <h3>System Info</h3>
-                    <div id="encoding-info" style="font-size: 0.85rem; line-height: 1.6">
+                    <div class="info-list">
                         <p>Camera: <span id="info-camera-type">---</span></p>
                         <p>Camera FW: <span id="info-camera-fw">---</span></p>
                         <p>Gimbal FW: <span id="info-gimbal-fw">---</span></p>
-                        <p
-                            style="
-                                margin-top: 8px;
-                                border-top: 1px solid var(--glass-border);
-                                padding-top: 8px;
-                            "
-                        >
-                            Resolution: <span id="info-resolution">---</span>
-                        </p>
-                        <p>Bitrate: <span id="info-bitrate">---</span></p>
-                        <p>FPS: <span id="info-fps">---</span></p>
+                        <p>Zoom FW: <span id="info-zoom-fw">---</span></p>
+                        <p class="divider-top">Main Stream: <span id="info-resolution">---</span></p>
+                        <p>Main Bitrate: <span id="info-bitrate">---</span></p>
+                        <p>Rec Stream: <span id="info-rec-resolution">---</span></p>
+                        <p>Gimbal Mode: <span id="info-gimbal-mode">---</span></p>
                     </div>
                 </div>
             </aside>
         </main>
 
-        <!-- Config Modal -->
-        <div id="config-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Configuration</h2>
-                    <button class="btn" id="close-config-btn">
-                        <i class="fas fa-times"></i>
-                    </button>
+        <!-- DEDICATED SETTINGS PAGE -->
+        <section id="settings-view" class="settings-page" style="display: none">
+            <div class="settings-toolbar">
+                <div>
+                    <h2>Gimbal & Camera Settings</h2>
+                    <p class="subtitle">Values are fetched directly from the connected device. Unapplicable features for your model are marked.</p>
                 </div>
-                <div class="input-group">
-                    <label>Camera IP Address</label>
-                    <input type="text" id="config-ip-input" placeholder="192.168.144.25" />
-                </div>
-                <div class="input-group">
-                    <label>Encoding Resolution</label>
-                    <select id="config-res-select">
-                        <option value="1920x1080">1080P</option>
-                        <option value="1280x720">720P</option>
-                    </select>
+                <button class="btn btn-primary" id="refresh-settings-btn">
+                    <i class="fas fa-sync"></i> Fetch Current Settings
+                </button>
+            </div>
+
+            <div class="settings-grid">
+                <!-- 1. Connection & Network -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-network-wired"></i> Connection & Network</h3>
+                    <div class="input-group">
+                        <label>Target Camera IP (Connect)</label>
+                        <div class="inline-row">
+                            <input type="text" id="set-target-ip" placeholder="192.168.144.25" />
+                            <button class="btn btn-primary btn-sm" id="btn-connect-ip">Connect</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Static IP / Mask / Gateway (0x81 / 0x82)</label>
+                        <div class="grid-3">
+                            <input type="text" id="set-static-ip" placeholder="IP" />
+                            <input type="text" id="set-static-mask" placeholder="Mask" />
+                            <input type="text" id="set-static-gw" placeholder="Gateway" />
+                        </div>
+                        <button class="btn btn-sm" id="btn-save-static-ip" style="margin-top: 8px; width: 100%">Apply Static IP</button>
+                    </div>
+                    <div class="inline-row" style="margin-top: 10px">
+                        <span class="subtitle" id="set-sys-time-display">System Time: ---</span>
+                        <button class="btn btn-sm" id="btn-sync-utc"><i class="fas fa-clock"></i> Sync UTC</button>
+                    </div>
                 </div>
 
-                <div
-                    style="
-                        border-top: 1px solid var(--glass-border);
-                        margin: 25px 0 15px;
-                        padding-top: 20px;
-                    "
-                >
-                    <label
-                        style="
-                            color: var(--danger);
-                            font-size: 0.7rem;
-                            font-weight: 700;
-                            display: block;
-                            margin-bottom: 12px;
-                            letter-spacing: 1px;
-                        "
-                        >DANGER ZONE</label
-                    >
-                    <div class="grid-controls" style="margin-bottom: 10px">
-                        <button
-                            class="btn btn-danger"
-                            id="reboot-camera-btn"
-                            style="font-size: 0.7rem; padding: 10px"
-                        >
-                            <i class="fas fa-power-off"></i> Reboot Cam
-                        </button>
-                        <button
-                            class="btn btn-danger"
-                            id="reboot-gimbal-btn"
-                            style="font-size: 0.7rem; padding: 10px"
-                        >
-                            <i class="fas fa-sync-alt"></i> Reboot Gimbal
-                        </button>
+                <!-- 2. Recording Stream (stream=0) -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-save"></i> Recording Stream (SD Card)</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Codec</label>
+                            <select id="rec-enc-type">
+                                <option value="1">H.264</option>
+                                <option value="2">H.265</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Resolution</label>
+                            <select id="rec-res">
+                                <option value="3840x2160">4K (3840x2160)</option>
+                                <option value="2560x1440">2K (2560x1440)</option>
+                                <option value="1920x1080">1080P (1920x1080)</option>
+                                <option value="1280x720">720P (1280x720)</option>
+                            </select>
+                        </div>
                     </div>
-                    <button
-                        class="btn btn-danger"
-                        style="width: 100%; font-size: 0.8rem"
-                        id="format-sd-btn"
-                    >
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Bitrate (kbps)</label>
+                            <input type="number" id="rec-bitrate" min="500" max="50000" />
+                        </div>
+                        <div class="input-group">
+                            <label>Current FPS</label>
+                            <input type="text" id="rec-fps" disabled />
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-save-rec" style="width: 100%">Save Recording Stream</button>
+                </div>
+
+                <!-- 3. Main Live Stream (stream=1) -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-broadcast-tower"></i> Main Live Stream (RTSP)</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Codec</label>
+                            <select id="main-enc-type">
+                                <option value="1">H.264</option>
+                                <option value="2">H.265</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Resolution</label>
+                            <select id="main-res">
+                                <option value="3840x2160">4K (3840x2160)</option>
+                                <option value="2560x1440">2K (2560x1440)</option>
+                                <option value="1920x1080">1080P (1920x1080)</option>
+                                <option value="1280x720">720P (1280x720)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Bitrate (kbps)</label>
+                            <input type="number" id="main-bitrate" min="200" max="20000" />
+                        </div>
+                        <div class="input-group">
+                            <label>Current FPS</label>
+                            <input type="text" id="main-fps" disabled />
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-save-main" style="width: 100%">Save Main Stream</button>
+                </div>
+
+                <!-- 4. Sub Live Stream (stream=2) -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-stream"></i> Sub Stream (RTSP)</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Codec</label>
+                            <select id="sub-enc-type">
+                                <option value="1">H.264</option>
+                                <option value="2">H.265</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Resolution</label>
+                            <select id="sub-res">
+                                <option value="1920x1080">1080P (1920x1080)</option>
+                                <option value="1280x720">720P (1280x720)</option>
+                                <option value="640x480">480P (640x480)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Bitrate (kbps)</label>
+                            <input type="number" id="sub-bitrate" min="100" max="10000" />
+                        </div>
+                        <div class="input-group">
+                            <label>Current FPS</label>
+                            <input type="text" id="sub-fps" disabled />
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-save-sub" style="width: 100%">Save Sub Stream</button>
+                </div>
+
+                <!-- 5. Camera & OSD -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-camera-retro"></i> Camera, Naming & OSD</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Photo Naming</label>
+                            <select id="set-picname-photo">
+                                <option value="1">Index (IMG_0001)</option>
+                                <option value="2">Timestamp</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Video Naming</label>
+                            <select id="set-picname-video">
+                                <option value="1">Index (REC_0001)</option>
+                                <option value="2">Timestamp</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>MAVLink / HDMI OSD</label>
+                            <select id="set-osd">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Video Stitching (ZT30/ZT6)</label>
+                            <select id="set-stitching">
+                                <option value="0">0: Zoom+Thermal / Wide</option>
+                                <option value="1">1: Wide+Thermal / Zoom</option>
+                                <option value="2">2: Zoom+Wide / Thermal</option>
+                                <option value="3">3: Zoom / Thermal</option>
+                                <option value="4">4: Zoom / Wide</option>
+                                <option value="5">5: Wide / Thermal</option>
+                                <option value="6">6: Wide / Zoom</option>
+                                <option value="7">7: Thermal / Zoom</option>
+                                <option value="8">8: Thermal / Wide</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <button class="btn btn-primary btn-sm" id="btn-save-cam-prefs">Save Camera Prefs</button>
+                        <button class="btn btn-sm" id="btn-hdr-toggle"><i class="fas fa-adjust"></i> Toggle HDR</button>
+                        <button class="btn btn-sm" id="btn-hdmi-on">Enable HDMI</button>
+                        <button class="btn btn-sm" id="btn-cvbs-on">Enable CVBS</button>
+                    </div>
+                </div>
+
+                <!-- 6. Gimbal & Motor -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-compass"></i> Gimbal & Motor Tuning</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Gimbal Motion Mode</label>
+                            <select id="set-gimbal-mode">
+                                <option value="follow">Follow</option>
+                                <option value="lock">Lock</option>
+                                <option value="fpv">FPV</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Weak Control Mode</label>
+                            <select id="set-weak-mode">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="subtitle" id="set-motor-info" style="margin-bottom: 10px">Mounting: --- | Zoom Linkage: ---</p>
+                    <div class="grid-controls">
+                        <button class="btn btn-primary btn-sm" id="btn-save-gimbal">Apply Gimbal Settings</button>
+                        <button class="btn btn-sm" id="btn-zoom-linkage">Toggle Zoom Linkage</button>
+                    </div>
+                </div>
+
+                <!-- 7. Thermal, Laser & AI -->
+                <div class="control-card settings-card">
+                    <h3><i class="fas fa-fire"></i> Thermal, Laser & AI Payload</h3>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>Thermal Palette</label>
+                            <select id="set-thermal-palette">
+                                <option value="0">White Hot</option>
+                                <option value="2">Sepia</option>
+                                <option value="3">Ironbow</option>
+                                <option value="4">Rainbow</option>
+                                <option value="5">Night</option>
+                                <option value="6">Aurora</option>
+                                <option value="7">Red Hot</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Thermal Gain</label>
+                            <select id="set-thermal-gain">
+                                <option value="0">Low Gain</option>
+                                <option value="1">High Gain</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <div class="input-group">
+                            <label>AI Tracking Stream</label>
+                            <select id="set-ai-stream">
+                                <option value="false">Disabled</option>
+                                <option value="true">Enabled</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Laser Ranging</label>
+                            <button class="btn btn-sm" id="btn-read-laser" style="width: 100%; height: 38px">Read Distance</button>
+                        </div>
+                    </div>
+                    <div class="grid-controls">
+                        <button class="btn btn-primary btn-sm" id="btn-save-payload">Apply Payload Settings</button>
+                        <button class="btn btn-sm" id="btn-ir-shutter">Manual IR Shutter</button>
+                    </div>
+                </div>
+
+                <!-- 8. Danger Zone -->
+                <div class="control-card settings-card danger-card">
+                    <h3 style="color: var(--danger)"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                    <p class="subtitle" style="margin-bottom: 14px">Device reboots take ~30 seconds. Formatting permanently erases all SD card media.</p>
+                    <div class="grid-controls" style="margin-bottom: 10px">
+                        <button class="btn btn-danger btn-sm" id="reboot-camera-btn"><i class="fas fa-power-off"></i> Reboot Camera</button>
+                        <button class="btn btn-danger btn-sm" id="reboot-gimbal-btn"><i class="fas fa-sync-alt"></i> Reboot Gimbal</button>
+                    </div>
+                    <button class="btn btn-danger btn-sm" style="width: 100%" id="format-sd-btn">
                         <i class="fas fa-trash-alt"></i> Format SD Card
                     </button>
                 </div>
-
-                <div style="margin-top: 25px">
-                    <button class="btn btn-primary" style="width: 100%" id="save-config-btn">
-                        Save Changes
-                    </button>
-                </div>
             </div>
-        </div>
+        </section>
 
         <script src="/static/app.js"></script>
     </body>
