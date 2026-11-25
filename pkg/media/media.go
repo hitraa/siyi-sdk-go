@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hitraa/siyi-sdk-go/pkg/models"
@@ -45,8 +46,34 @@ type apiResponse struct {
 	Data    json.RawMessage `json:"data"`
 }
 
+func encodeOrderedParams(params url.Values) string {
+	order := []string{"media_type", "path", "start", "count"}
+	seen := make(map[string]bool, len(order))
+	parts := make([]string, 0, len(params))
+	for _, k := range order {
+		if vs, ok := params[k]; ok {
+			seen[k] = true
+			for _, v := range vs {
+				parts = append(parts, url.QueryEscape(k)+"="+url.QueryEscape(v))
+			}
+		}
+	}
+	if len(seen) < len(params) {
+		rest := make(url.Values)
+		for k, vs := range params {
+			if !seen[k] {
+				rest[k] = vs
+			}
+		}
+		if encoded := rest.Encode(); encoded != "" {
+			parts = append(parts, encoded)
+		}
+	}
+	return strings.Join(parts, "&")
+}
+
 func (c *Client) get(ctx context.Context, endpoint string, params url.Values, out interface{}) error {
-	reqURL := fmt.Sprintf("%s%s?%s", c.baseURL, endpoint, params.Encode())
+	reqURL := fmt.Sprintf("%s%s?%s", c.baseURL, endpoint, encodeOrderedParams(params))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("create media request: %w", err)
