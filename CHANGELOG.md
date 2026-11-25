@@ -7,6 +7,36 @@ and `siyi-sdk-go` adheres to [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ---
 
+## [v0.1.1] - 2026-11-25
+
+### ✨ Added
+
+- **Full CLI Settings & Serial Support (`cmd/siyi-cli`)**:
+  - Added commands: `mode`, `set-attitude`, `single-axis`, `capture`, `encoding`, `pic-name`, `osd`, `stitching`, `ip-config`, `sys-time`, `sync-time`, `weak-control`, `laser-state`, `ai`, and `thermal`.
+  - Added `-proto serial` with `-device` and `-baud` flags for UART/USB-serial connections.
+- **Web Dashboard & REST API (`web/`, `cmd/siyi-web`)**:
+  - Added `ffmpeg` RTSP-to-MJPEG pipeline and multi-client frame subscription for `/api/stream/video`.
+  - Added `GET /api/settings` to fetch all current gimbal, camera, stream, network, and payload settings on connect.
+  - Added `GET /api/media/download-all` to stream `.zip` archives for photos (`?type=0`), videos (`?type=1`), or all media (`?type=all`).
+  - Added endpoints for gimbal mode/attitude/weak control, pic-name, OSD, stitching, capture actions, static IP, UTC time sync, laser, thermal, and AI tracking.
+  - Overhauled Web UI with Dark/Light mode toggle, dedicated Settings page with separate Recording/Main/Sub stream controls, lazy-loaded photo thumbnails, and scrollable media gallery.
+- **Auto-Generated Release Changelog (`.github/workflows/release.yml`)**:
+  - Release workflow automatically generates `CHANGELOG.md` and release notes from conventional commits when a `v*.*.*` tag is pushed.
+
+### 🐛 Fixed
+
+- **Multi-Device Protocol Compatibility (`pkg/commands`)**:
+  - Support both 8-byte (cameras without optical zoom, e.g. A8 Mini) and 12-byte responses in `DecodeFirmwareVersion` (`0x01`).
+  - Fix `EncodeSoftReboot` and `DecodeSoftRebootAck` (`0x80`) to use the 2-byte camera/gimbal format per SIYI protocol.
+  - Fix `DecodeLocalTemp` (`0x13`) payload length check from 24 to 20 bytes.
+- **Media HTTP API (`pkg/media`)**:
+  - Preserve CGI query parameter order (`media_type` first) to fix `Invalid parameter, media_type` errors on `getmedialist`.
+- **RTSP Streaming (`pkg/stream`, `web/`)**:
+  - Default `gortsplib.Client` to TCP transport and auto-detect camera generation (`Old` vs `New`) from Hardware ID.
+  - Auto-refresh live video stream on dashboard tab switch, page visibility restore, and stream error.
+
+---
+
 ## [v0.1.0] - 2026-10-15
 
 ### 🚀 Added
